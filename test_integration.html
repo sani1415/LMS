@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+        }
+        .status.connected {
+            background-color: #28a745;
+        }
+        .status.disconnected {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <h1>Library Management System - Integration Test</h1>
+    
+    <div id="api-status" class="status disconnected">API Status: Disconnected</div>
+    
+    <div class="test-section">
+        <h2>1. Test API Connection</h2>
+        <p>First, make sure your Flask backend is running on port 5001</p>
+        <button class="test-button" onclick="testConnection()">Test Connection</button>
+        <div id="connection-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Dashboard Data</h2>
+        <p>Test if dashboard statistics are loading from the API</p>
+        <button class="test-button" onclick="testDashboard()">Test Dashboard</button>
+        <div id="dashboard-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Books API</h2>
+        <p>Test if books data is loading from the API</p>
+        <button class="test-button" onclick="testBooks()">Test Books</button>
+        <div id="books-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Add Book</h2>
+        <p>Test adding a new book through the API</p>
+        <button class="test-button" onclick="testAddBook()">Test Add Book</button>
+        <div id="add-book-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Test Members API</h2>
+        <p>Test if members data is loading from the API</p>
+        <button class="test-button" onclick="testMembers()">Test Members</button>
+        <div id="members-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Test Add Member</h2>
+        <p>Test adding a new member through the API</p>
+        <button class="test-button" onclick="testAddMember()">Test Add Member</button>
+        <div id="add-member-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>7. Test Categories API</h2>
+        <p>Test if categories data is loading from the API</p>
+        <button class="test-button" onclick="testCategories()">Test Categories</button>
+        <div id="categories-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>8. Test Add Category</h2>
+        <p>Test adding a new category through the API</p>
+        <button class="test-button" onclick="testAddCategory()">Test Add Category</button>
+        <div id="add-category-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>9. Test Full Integration</h2>
+        <p>Test the complete frontend-backend integration</p>
+        <button class="test-button" onclick="testFullIntegration()">Test Full Integration</button>
+        <div id="full-integration-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        
+        function updateStatus(connected) {
+            const status = document.getElementById('api-status');
+            status.className = `status ${connected ? 'connected' : 'disconnected'}`;
+            status.textContent = `API Status: ${connected ? 'Connected' : 'Disconnected'}`;
+        }
+
+        function showResult(elementId, message, isError = false, isSuccess = false) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isError ? 'error' : ''} ${isSuccess ? 'success' : ''}`;
+            element.innerHTML = message;
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            const url = `${API_BASE}${endpoint}`;
+            const defaultOptions = {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                ...options
+            };
+
+            try {
+                const response = await fetch(url, defaultOptions);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                updateStatus(true);
+                return await response.json();
+            } catch (error) {
+                updateStatus(false);
+                throw error;
+            }
+        }
+
+        async function testConnection() {
+            try {
+                const result = await apiCall('/health');
+                showResult('connection-result', 
+                    `<strong>✅ Connection Successful!</strong><br>
+                     Status: ${result.status}<br>
+                     Message: ${result.message}`, 
+                    false, true);
+            } catch (error) {
+                showResult('connection-result', 
+                    `<strong>❌ Connection Failed!</strong><br>
+                     Error: ${error.message}<br>
+                     Make sure your Flask backend is running on port 5001`, 
+                    true);
+            }
+        }
+
+        async function testDashboard() {
+            try {
+                const result = await apiCall('/dashboard');
+                showResult('dashboard-result', 
+                    `<strong>✅ Dashboard Data Loaded!</strong><br>
+                     Total Books: ${result.total_books}<br>
+                     Total Authors: ${result.total_authors}<br>
+                     Total Categories: ${result.total_categories}<br>
+                     Books Available: ${result.books_available}<br>
+                     Books Issued: ${result.books_issued}`, 
+                    false, true);
+            } catch (error) {
+                showResult('dashboard-result', 
+                    `<strong>❌ Dashboard Test Failed!</strong><br>
+                     Error: ${error.message}`, 
+                    true);
+            }
+        }
+
+        async function testBooks() {
+            try {
+                const result = await apiCall('/books');
+                showResult('books-result', 
+                    `<strong>✅ Books Data Loaded!</strong><br>
+                     Total Books: ${result.total}<br>
+                     Books on Current Page: ${result.books.length}<br>
+                     Sample Book: ${result.books[0] ? result.books[0].bookName : 'None'}`, 
+                    false, true);
+            } catch (error) {
+                showResult('books-result', 
+                    `<strong>❌ Books Test Failed!</strong><br>
+                     Error: ${error.message}`, 
+                    true);
+            }
+        }
+
+        async function testAddBook() {
+            try {
+                const newBook = {
+                    bookName: 'Test Book ' + Date.now(),
+                    author: 'Test Author',
+                    category: 'Fiction',
+                    volumes: 1,
+                    year: 2024,
+                    note: 'Test book for integration testing'
+                };
+
+                const result = await apiCall('/books', {
+                    method: 'POST',
+                    body: JSON.stringify(newBook)
+                });
+
+                showResult('add-book-result', 
+                    `<strong>✅ Book Added Successfully!</strong><br>
+                     Book ID: ${result.id}<br>
+                     Book Name: ${result.bookName}<br>
+                     Author: ${result.author}<br>
+                     Category: ${result.category}`, 
+                    false, true);
+            } catch (error) {
+                showResult('add-book-result', 
+                    `<strong>❌ Add Book Test Failed!</strong><br>
+                     Error: ${error.message}`, 
+                    true);
+            }
+        }
+
+        async function testMembers() {
+            try {
+                const result = await apiCall('/members');
+                showResult('members-result', 
+                    `<strong>✅ Members Data Loaded!</strong><br>
+                     Total Members: ${result.length}<br>
+                     Sample Members: ${result.slice(0, 3).map(m => m.name).join(', ')}`, 
+                    false, true);
+            } catch (error) {
+                showResult('members-result', 
+                    `<strong>❌ Members Test Failed!</strong><br>
+                     Error: ${error.message}`, 
+                    true);
+            }
+        }
+
+        async function testAddMember() {
+            try {
+                const newMember = {
+                    name: 'Test Member ' + Date.now(),
+                    email: 'test@example.com',
+                    phone: '123-456-7890',
+                    address: 'Test Address'
+                };
+
+                const result = await apiCall('/members', {
+                    method: 'POST',
+                    body: JSON.stringify(newMember)
+                });
+
+                showResult('add-member-result', 
+                    `<strong>✅ Member Added Successfully!</strong><br>
+                     Member ID: ${result.id}<br>
+                     Name: ${result.name}<br>
+                     Email: ${result.email}`, 
+                    false, true);
+            } catch (error) {
+                showResult('add-member-result', 
+                    `<strong>❌ Add Member Test Failed!</strong><br>
+                     Error: ${error.message}`, 
+                    true);
+            }
+        }
+
+        async function testCategories() {
+            try {
+                const result = await apiCall('/categories');
+                showResult('categories-result', 
+                    `<strong>✅ Categories Data Loaded!</strong><br>
+                     Total Categories: ${result.length}<br>
+                     Sample Categories: ${result.slice(0, 5).map(c => c.name).join(', ')}`, 
+                    false, true);
+            } catch (error) {
+                showResult('categories-result', 
+                    `<strong>❌ Categories Test Failed!</strong><br>
+                     Error: ${error.message}`, 
+                    true);
+            }
+        }
+
+        async function testAddCategory() {
+            try {
+                const newCategory = {
+                    name: 'Test Category ' + Date.now(),
+                    description: 'Test category for integration testing'
+                };
+
+                const result = await apiCall('/categories', {
+                    method: 'POST',
+                    body: JSON.stringify(newCategory)
+                });
+
+                showResult('add-category-result', 
+                    `<strong>✅ Category Added Successfully!</strong><br>
+                     Category ID: ${result.id}<br>
+                     Name: ${result.name}<br>
+                     Description: ${result.description}`, 
+                    false, true);
+            } catch (error) {
+                showResult('add-category-result', 
+                    `<strong>❌ Add Category Test Failed!</strong><br>
+                     Error: ${error.message}`, 
+                    true);
+            }
+        }
+
+        async function testFullIntegration() {
+            try {
+                // Test all endpoints
+                const results = await Promise.all([
+                    apiCall('/health'),
+                    apiCall('/dashboard'),
+                    apiCall('/books'),
+                    apiCall('/members'),
+                    apiCall('/categories'),
+                    apiCall('/publishers'),
+                    apiCall('/issue-history'),
+                    apiCall('/library-log')
+                ]);
+
+                showResult('full-integration-result', 
+                    `<strong>✅ Full Integration Test Passed!</strong><br>
+                     All API endpoints are working correctly:<br>
+                     • Health Check: ✅<br>
+                     • Dashboard: ✅<br>
+                     • Books: ✅ (${results[2].total} books)<br>
+                     • Members: ✅ (${results[3].length} members)<br>
+                     • Categories: ✅ (${results[4].length} categories)<br>
+                     • Publishers: ✅ (${results[5].length} publishers)<br>
+                     • Issue History: ✅ (${results[6].total} records)<br>
+                     • Library Log: ✅ (${results[7].total} entries)<br><br>
+                     <strong>Your frontend-backend integration is working perfectly!</strong>`, 
+                    false, true);
+            } catch (error) {
+                showResult('full-integration-result', 
+                    `<strong>❌ Full Integration Test Failed!</strong><br>
+                     Error: ${error.message}<br>
+                     Some API endpoints may not be working correctly.`, 
+                    true);
+            }
+        }
+
+        // Auto-test connection on page load
+        window.addEventListener('load', () => {
+            setTimeout(testConnection, 1000);
+        });
+    </script>
+</body>
+</html>

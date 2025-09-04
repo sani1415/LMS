@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Add Buttons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        input[type="text"] {
+            width: 300px;
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Add Buttons Test</h1>
+    
+    <div class="test-section">
+        <h2>🔍 Test Input Fields</h2>
+        <p>This page tests if the input fields are working correctly</p>
+        
+        <div class="input-group">
+            <label for="test-member">Test Member Input:</label><br>
+            <input type="text" id="test-member" placeholder="Enter member name">
+            <button onclick="testMemberInput()">Test Member Input</button>
+        </div>
+        
+        <div class="input-group">
+            <label for="test-category">Test Category Input:</label><br>
+            <input type="text" id="test-category" placeholder="Enter category name">
+            <button onclick="testCategoryInput()">Test Category Input</button>
+        </div>
+        
+        <div class="input-group">
+            <label for="test-publisher">Test Publisher Input:</label><br>
+            <input type="text" id="test-publisher" placeholder="Enter publisher name">
+            <button onclick="testPublisherInput()">Test Publisher Input</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Test API Calls</h2>
+        <p>Test if the API endpoints are working</p>
+        
+        <button onclick="testAPIHealth()">Test API Health</button>
+        <button onclick="testAPIMembers()">Test API Members</button>
+        <button onclick="testAPICategories()">Test API Categories</button>
+        <button onclick="testAPIPublishers()">Test API Publishers</button>
+        
+        <div id="api-results"></div>
+    </div>
+
+    <script>
+        function showResult(message, isError = false, isSuccess = false) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${isError ? 'error' : ''} ${isSuccess ? 'success' : ''}`;
+            resultDiv.innerHTML = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function showAPIResult(message, isError = false, isSuccess = false) {
+            const resultsDiv = document.getElementById('api-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${isError ? 'error' : ''} ${isSuccess ? 'success' : ''}`;
+            resultDiv.innerHTML = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        // Test Input Functions
+        function testMemberInput() {
+            const input = document.getElementById('test-member');
+            const value = input.value.trim();
+            
+            showResult(`
+                <strong>Member Input Test:</strong><br>
+                Input Element: ${input ? 'Found' : 'NOT FOUND'}<br>
+                Input Value: "${value}"<br>
+                Input Length: ${value.length}<br>
+                Is Empty: ${!value ? 'YES' : 'NO'}
+            `, !input, !!input);
+        }
+
+        function testCategoryInput() {
+            const input = document.getElementById('test-category');
+            const value = input.value.trim();
+            
+            showResult(`
+                <strong>Category Input Test:</strong><br>
+                Input Element: ${input ? 'Found' : 'NOT FOUND'}<br>
+                Input Value: "${value}"<br>
+                Input Length: ${value.length}<br>
+                Is Empty: ${!value ? 'YES' : 'NO'}
+            `, !input, !!input);
+        }
+
+        function testPublisherInput() {
+            const input = document.getElementById('test-publisher');
+            const value = input.value.trim();
+            
+            showResult(`
+                <strong>Publisher Input Test:</strong><br>
+                Input Element: ${input ? 'Found' : 'NOT FOUND'}<br>
+                Input Value: "${value}"<br>
+                Input Length: ${value.length}<br>
+                Is Empty: ${!value ? 'YES' : 'NO'}
+            `, !input, !!input);
+        }
+
+        // Test API Functions
+        async function testAPIHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                showAPIResult(`
+                    <strong>API Health Test:</strong><br>
+                    Status: ${response.status}<br>
+                    Response: ${JSON.stringify(data, null, 2)}
+                `, false, true);
+            } catch (error) {
+                showAPIResult(`
+                    <strong>API Health Test Failed:</strong><br>
+                    Error: ${error.message}
+                `, true);
+            }
+        }
+
+        async function testAPIMembers() {
+            try {
+                const response = await fetch('/api/members');
+                const data = await response.json();
+                showAPIResult(`
+                    <strong>API Members Test:</strong><br>
+                    Status: ${response.status}<br>
+                    Total Members: ${data.length}<br>
+                    Response: ${JSON.stringify(data, null, 2)}
+                `, false, true);
+            } catch (error) {
+                showAPIResult(`
+                    <strong>API Members Test Failed:</strong><br>
+                    Error: ${error.message}
+                `, true);
+            }
+        }
+
+        async function testAPICategories() {
+            try {
+                const response = await fetch('/api/categories');
+                const data = await response.json();
+                showAPIResult(`
+                    <strong>API Categories Test:</strong><br>
+                    Status: ${response.status}<br>
+                    Total Categories: ${data.length}<br>
+                    Response: ${JSON.stringify(data, null, 2)}
+                `, false, true);
+            } catch (error) {
+                showAPIResult(`
+                    <strong>API Categories Test Failed:</strong><br>
+                    Error: ${error.message}
+                `, true);
+            }
+        }
+
+        async function testAPIPublishers() {
+            try {
+                const response = await fetch('/api/publishers');
+                const data = await response.json();
+                showAPIResult(`
+                    <strong>API Publishers Test:</strong><br>
+                    Status: ${response.status}<br>
+                    Total Publishers: ${data.length}<br>
+                    Response: ${JSON.stringify(data, null, 2)}
+                `, false, true);
+            } catch (error) {
+                showAPIResult(`
+                    <strong>API Publishers Test Failed:</strong><br>
+                    Error: ${error.message}
+                `, true);
+            }
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            showResult('<strong>Page loaded. Enter text in the input fields and click the test buttons.</strong>');
+        });
+    </script>
+</body>
+</html>

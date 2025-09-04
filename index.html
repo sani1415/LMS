@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="login" class="page active">
+        <h1>Login</h1>
+        <div class="form-container">
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="app-container" style="display: none;">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-book-open"></i>
+                <h2>LMS</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-page="books">
+                    <i class="fas fa-list"></i>
+                    <span>Book List</span>
+                </li>
+                <li class="nav-item" data-page="add-book">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Book</span>
+                </li>
+                <li class="nav-item" data-page="issue-history">
+                    <i class="fas fa-history"></i>
+                    <span>Issue History</span>
+                </li>
+                <li class="nav-item" data-page="library-log">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Library Log</span>
+                </li>
+                <li class="nav-item" data-page="members">
+                    <i class="fas fa-users"></i>
+                    <span>Manage Members</span>
+                </li>
+                <li class="nav-item" data-page="categories">
+                    <i class="fas fa-tags"></i>
+                    <span>Manage Categories</span>
+                </li>
+                <li class="nav-item" data-page="publishers">
+                    <i class="fas fa-building"></i>
+                    <span>Manage Publishers</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <h1>Dashboard</h1>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Total Books</h3>
+                            <p class="stat-number" id="total-books">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-edit"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Total Authors</h3>
+                            <p class="stat-number" id="total-authors">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Total Categories</h3>
+                            <p class="stat-number" id="total-categories">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Books Available</h3>
+                            <p class="stat-number" id="books-available">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card clickable" id="books-issued-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Books Issued</h3>
+                            <p class="stat-number" id="books-issued">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Book List Page -->
+            <div id="books" class="page">
+                <div class="page-header">
+                    <h1>Book List</h1>
+                    <button class="btn btn-primary" id="export-excel">
+                        <i class="fas fa-download"></i> Export to Excel
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>
+                                    Book Name
+                                    <input type="text" class="filter-input" data-column="bookName" placeholder="Filter...">
+                                </th>
+                                <th>
+                                    Author
+                                    <input type="text" class="filter-input" data-column="author" placeholder="Filter...">
+                                </th>
+                                <th>
+                                    Category
+                                    <input type="text" class="filter-input" data-column="category" placeholder="Filter...">
+                                </th>
+                                <th>
+                                    Publisher
+                                    <input type="text" class="filter-input" data-column="publisher" placeholder="Filter...">
+                                </th>
+                                <th>
+                                    Year
+                                    <input type="text" class="filter-input" data-column="year" placeholder="Filter...">
+                                </th>
+                                <th>
+                                    Volumes
+                                    <input type="text" class="filter-input" data-column="volumes" placeholder="Filter...">
+                                </th>
+                                <th>
+                                    Special Note
+                                    <input type="text" class="filter-input" data-column="note" placeholder="Filter...">
+                                </th>
+                                <th>
+                                    Status
+                                    <select class="filter-select" data-column="status">
+                                        <option value="">All</option>
+                                        <option value="Available">Available</option>
+                                        <option value="Issued">Issued</option>
+                                    </select>
+                                </th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="books-table-body">
+                            <!-- Books will be populated here -->
+                        </tbody>
+                    </table>
+                    <div class="pagination">
+                        <button class="btn btn-secondary" id="prev-page">Previous</button>
+                        <span id="page-info">Page 1 of 1</span>
+                        <button class="btn btn-secondary" id="next-page">Next</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Book Page -->
+            <div id="add-book" class="page">
+                <h1>Add New Book</h1>
+                <div class="form-container">
+                    <form id="add-book-form">
+                        <div class="form-group">
+                            <label for="bookName">Book Name *</label>
+                            <input type="text" id="bookName" name="bookName" required>
+                            <div class="duplicate-suggestions" id="book-suggestions"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="author">Author Name *</label>
+                            <input type="text" id="author" name="author" required>
+                            <div class="duplicate-suggestions" id="author-suggestions"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="volumes">Book Parts / Volumes</label>
+                            <input type="number" id="volumes" name="volumes" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category *</label>
+                            <select id="category" name="category" required>
+                                <option value="">Select Category</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="publisher">Publisher</label>
+                            <select id="publisher" name="publisher">
+                                <option value="">Select Publisher</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="year">Year of Publish</label>
+                            <input type="number" id="year" name="year" min="1800" max="2024">
+                        </div>
+                        <div class="form-group">
+                            <label for="note">Special Note</label>
+                            <textarea id="note" name="note" rows="3"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Add Book</button>
+                            <button type="button" class="btn btn-secondary" id="import-excel">
+                                <i class="fas fa-upload"></i> Import from Excel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Issue History Page -->
+            <div id="issue-history" class="page">
+                <h1>Issue History</h1>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>
+                                    Book Name
+                                    <input type="text" class="filter-input" data-column="bookName" placeholder="Filter...">
+                                </th>
+                                <th>
+                                    Member Name
+                                    <input type="text" class="filter-input" data-column="memberName" placeholder="Filter...">
+                                </th>
+                                <th>Issue Date</th>
+                                <th>Return Date</th>
+                                <th>
+                                    Status
+                                    <select class="filter-select" data-column="status">
+                                        <option value="">All</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Returned">Returned</option>
+                                    </select>
+                                </th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="issue-history-table-body">
+                            <!-- Issue history will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Library Log Page -->
+            <div id="library-log" class="page">
+                <h1>Library Log</h1>
+                <div class="log-container">
+                    <div class="add-log-entry">
+                        <textarea id="new-log-entry" placeholder="Enter new log entry..." rows="3"></textarea>
+                        <button class="btn btn-primary" id="add-log-btn">Add Entry</button>
+                    </div>
+                    <div class="log-entries" id="log-entries">
+                        <!-- Log entries will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Members Page -->
+            <div id="members" class="page">
+                <h1>Manage Members</h1>
+                <div class="manage-container">
+                    <div class="add-item">
+                        <input type="text" id="new-member" placeholder="Enter member name">
+                        <button class="btn btn-primary" id="add-member-btn">Add Member</button>
+                    </div>
+                    <div class="items-list" id="members-list">
+                        <!-- Members will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Categories Page -->
+            <div id="categories" class="page">
+                <h1>Manage Categories</h1>
+                <div class="manage-container">
+                    <div class="add-item">
+                        <input type="text" id="new-category" placeholder="Enter category name">
+                        <button class="btn btn-primary" id="add-category-btn">Add Category</button>
+                    </div>
+                    <div class="items-list" id="categories-list">
+                        <!-- Categories will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Publishers Page -->
+            <div id="publishers" class="page">
+                <h1>Manage Publishers</h1>
+                <div class="manage-container">
+                    <div class="add-item">
+                        <input type="text" id="new-publisher" placeholder="Enter publisher name">
+                        <button class="btn btn-primary" id="add-publisher-btn">Add Publisher</button>
+                    </div>
+                    <div class="items-list" id="publishers-list">
+                        <!-- Publishers will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Modal Title</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Modal content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal-overlay" class="modal-overlay">
+        <div class="modal confirm-modal">
+            <div class="modal-header">
+                <h3>Confirm Action</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Are you sure you want to perform this action?</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="confirm-cancel">Cancel</button>
+                    <button class="btn btn-danger" id="confirm-ok">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="back-to-top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script src="js/app.js"></script>
+    </div>
+</body>
+</html>

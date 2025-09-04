@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Library Management System - Test Page</h1>
+    
+    <div class="test-section">
+        <h2>Application Status</h2>
+        <div id="status">Checking...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Add Functions</h2>
+        <p>These tests will verify that the add buttons are working properly:</p>
+        
+        <div>
+            <label for="test-member">Test Member:</label>
+            <input type="text" id="test-member" placeholder="Enter member name">
+            <button onclick="testAddMember()">Test Add Member</button>
+        </div>
+        
+        <div>
+            <label for="test-category">Test Category:</label>
+            <input type="text" id="test-category" placeholder="Enter category name">
+            <button onclick="testAddCategory()">Test Add Category</button>
+        </div>
+        
+        <div>
+            <label for="test-publisher">Test Publisher:</label>
+            <input type="text" id="test-publisher" placeholder="Enter publisher name">
+            <button onclick="testAddPublisher()">Test Add Publisher</button>
+        </div>
+        
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Navigation</h2>
+        <button onclick="window.location.href='/'">Go to Main Application</button>
+        <button onclick="window.location.href='/test_crud_operations.html'">Go to CRUD Test Page</button>
+    </div>
+
+    <script>
+        // Test if the application is loaded
+        function checkAppStatus() {
+            const statusDiv = document.getElementById('status');
+            
+            if (typeof window.lms !== 'undefined') {
+                statusDiv.innerHTML = '<div class="success">✅ Application loaded successfully! LMS object is available.</div>';
+            } else {
+                statusDiv.innerHTML = '<div class="error">❌ Application not loaded. LMS object is not available.</div>';
+            }
+        }
+        
+        // Test add member function
+        function testAddMember() {
+            const input = document.getElementById('test-member');
+            const name = input.value.trim();
+            
+            if (!name) {
+                showResult('Please enter a member name', 'error');
+                return;
+            }
+            
+            if (typeof window.lms !== 'undefined') {
+                try {
+                    window.lms.addMember();
+                    showResult('Add member function called successfully', 'success');
+                } catch (error) {
+                    showResult('Error calling addMember: ' + error.message, 'error');
+                }
+            } else {
+                showResult('LMS object not available', 'error');
+            }
+        }
+        
+        // Test add category function
+        function testAddCategory() {
+            const input = document.getElementById('test-category');
+            const name = input.value.trim();
+            
+            if (!name) {
+                showResult('Please enter a category name', 'error');
+                return;
+            }
+            
+            if (typeof window.lms !== 'undefined') {
+                try {
+                    window.lms.addCategory();
+                    showResult('Add category function called successfully', 'success');
+                } catch (error) {
+                    showResult('Error calling addCategory: ' + error.message, 'error');
+                }
+            } else {
+                showResult('LMS object not available', 'error');
+            }
+        }
+        
+        // Test add publisher function
+        function testAddPublisher() {
+            const input = document.getElementById('test-publisher');
+            const name = input.value.trim();
+            
+            if (!name) {
+                showResult('Please enter a publisher name', 'error');
+                return;
+            }
+            
+            if (typeof window.lms !== 'undefined') {
+                try {
+                    window.lms.addPublisher();
+                    showResult('Add publisher function called successfully', 'success');
+                } catch (error) {
+                    showResult('Error calling addPublisher: ' + error.message, 'error');
+                }
+            } else {
+                showResult('LMS object not available', 'error');
+            }
+        }
+        
+        function showResult(message, type) {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = type;
+            resultDiv.textContent = message;
+            resultsDiv.appendChild(resultDiv);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                resultDiv.remove();
+            }, 5000);
+        }
+        
+        // Check status when page loads
+        window.addEventListener('load', () => {
+            checkAppStatus();
+            
+            // Check again after a delay to see if the app loads
+            setTimeout(checkAppStatus, 2000);
+        });
+    </script>
+</body>
+</html>
