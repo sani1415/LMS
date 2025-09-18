@@ -13,8 +13,9 @@
 </head>
 <body>
     <div id="login" class="page active">
-        <h1 data-translate="login.title">Login</h1>
-        <div class="form-container">
+        <div>
+            <h1 data-translate="login.title">Login</h1>
+            <div class="form-container">
             <form id="login-form">
                 <div class="form-group">
                     <label for="username" data-translate="login.username">Username</label>
@@ -28,18 +29,29 @@
                     <button type="submit" class="btn btn-primary" data-translate="login.loginButton">Login</button>
                 </div>
             </form>
+            </div>
         </div>
     </div>
     <div class="app-container" style="display: none;">
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
             <div class="sidebar-header">
+                <div class="sidebar-title">
                 <i class="fas fa-book-open"></i>
-                <h2 data-translate="app.name">LMS</h2>
-                <button id="language-toggle" class="language-toggle" title="Switch Language">
-                    <i class="fas fa-language"></i>
-                    <span id="current-lang">EN</span>
-                </button>
+                    <h2 data-translate="app.name">LMS</h2>
+                </div>
+                <div class="header-buttons">
+                    <div class="language-selector">
+                        <i class="fas fa-language"></i>
+                        <select id="language-dropdown">
+                            <option value="ar">العربية</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <button id="logout-btn" class="logout-btn" data-translate-title="common.logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item active" data-page="dashboard">
@@ -134,9 +146,9 @@
             <!-- Book List Page -->
             <div id="books" class="page">
                 <div class="page-header">
-                    <h1>Book List</h1>
+                    <h1 data-translate="books.title">Book List</h1>
                     <button class="btn btn-primary" id="export-excel">
-                        <i class="fas fa-download"></i> Export to Excel
+                        <i class="fas fa-download"></i> <span data-translate="books.exportExcel">Export to Excel</span>
                     </button>
                 </div>
                 <div class="table-container">
@@ -145,42 +157,42 @@
                             <tr>
                                 <th>#</th>
                                 <th>
-                                    Book Name
-                                    <input type="text" class="filter-input" data-column="bookName" placeholder="Filter...">
+                                    <span data-translate="books.bookName">Book Name</span>
+                                    <input type="text" class="filter-input" data-column="bookName" data-translate-placeholder="books.filter">
                                 </th>
                                 <th>
-                                    Author
-                                    <input type="text" class="filter-input" data-column="author" placeholder="Filter...">
+                                    <span data-translate="books.author">Author</span>
+                                    <input type="text" class="filter-input" data-column="author" data-translate-placeholder="books.filter">
                                 </th>
                                 <th>
-                                    Category
-                                    <input type="text" class="filter-input" data-column="category" placeholder="Filter...">
+                                    <span data-translate="books.category">Category</span>
+                                    <input type="text" class="filter-input" data-column="category" data-translate-placeholder="books.filter">
                                 </th>
                                 <th>
-                                    Publisher
-                                    <input type="text" class="filter-input" data-column="publisher" placeholder="Filter...">
+                                    <span data-translate="books.publisher">Publisher</span>
+                                    <input type="text" class="filter-input" data-column="publisher" data-translate-placeholder="books.filter">
                                 </th>
                                 <th>
-                                    Year
-                                    <input type="text" class="filter-input" data-column="year" placeholder="Filter...">
+                                    <span data-translate="books.year">Year</span>
+                                    <input type="text" class="filter-input" data-column="year" data-translate-placeholder="books.filter">
                                 </th>
                                 <th>
-                                    Volumes
-                                    <input type="text" class="filter-input" data-column="volumes" placeholder="Filter...">
+                                    <span data-translate="books.volumes">Volumes</span>
+                                    <input type="text" class="filter-input" data-column="volumes" data-translate-placeholder="books.filter">
                                 </th>
                                 <th>
-                                    Special Note
-                                    <input type="text" class="filter-input" data-column="note" placeholder="Filter...">
+                                    <span data-translate="books.note">Special Note</span>
+                                    <input type="text" class="filter-input" data-column="note" data-translate-placeholder="books.filter">
                                 </th>
                                 <th>
-                                    Status
+                                    <span data-translate="books.status">Status</span>
                                     <select class="filter-select" data-column="status">
-                                        <option value="">All</option>
-                                        <option value="Available">Available</option>
-                                        <option value="Issued">Issued</option>
+                                        <option value="" data-translate="common.all">All</option>
+                                        <option value="Available" data-translate="books.available">Available</option>
+                                        <option value="Issued" data-translate="books.issued">Issued</option>
                                     </select>
                                 </th>
-                                <th>Actions</th>
+                                <th data-translate="books.actions">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="books-table-body">
@@ -197,41 +209,41 @@
 
             <!-- Add Book Page -->
             <div id="add-book" class="page">
-                <h1>Add New Book</h1>
+                <h1 data-translate="addBook.title">Add New Book</h1>
                 <div class="form-container">
                     <form id="add-book-form">
                         <div class="form-group">
-                            <label for="bookName">Book Name *</label>
+                            <label for="bookName"><span data-translate="addBook.bookName">Book Name</span> <span data-translate="addBook.required">*</span></label>
                             <input type="text" id="bookName" name="bookName" required>
                             <div class="duplicate-suggestions" id="book-suggestions"></div>
                         </div>
                         <div class="form-group">
-                            <label for="author">Author Name *</label>
+                            <label for="author"><span data-translate="addBook.author">Author Name</span> <span data-translate="addBook.required">*</span></label>
                             <input type="text" id="author" name="author" required>
                             <div class="duplicate-suggestions" id="author-suggestions"></div>
                         </div>
                         <div class="form-group">
-                            <label for="volumes">Book Parts / Volumes</label>
+                            <label for="volumes" data-translate="addBook.volumes">Book Parts / Volumes</label>
                             <input type="number" id="volumes" name="volumes" min="1">
                         </div>
                         <div class="form-group">
-                            <label for="category">Category *</label>
+                            <label for="category"><span data-translate="addBook.category">Category</span> <span data-translate="addBook.required">*</span></label>
                             <select id="category" name="category" required>
-                                <option value="">Select Category</option>
+                                <option value="" data-translate="common.select">Select Category</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="publisher">Publisher</label>
+                            <label for="publisher" data-translate="addBook.publisher">Publisher</label>
                             <select id="publisher" name="publisher">
                                 <option value="">Select Publisher</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="year">Year of Publish</label>
+                            <label for="year" data-translate="addBook.year">Year of Publish</label>
                             <input type="number" id="year" name="year" min="1800" max="2024">
                         </div>
                         <div class="form-group">
-                            <label for="note">Special Note</label>
+                            <label for="note" data-translate="addBook.note">Special Note</label>
                             <textarea id="note" name="note" rows="3"></textarea>
                         </div>
                         <div class="form-actions">
@@ -296,11 +308,11 @@
 
             <!-- Manage Members Page -->
             <div id="members" class="page">
-                <h1>Manage Members</h1>
+                <h1 data-translate="members.title">Manage Members</h1>
                 <div class="manage-container">
                     <div class="add-item">
-                        <input type="text" id="new-member" placeholder="Enter member name">
-                        <button class="btn btn-primary" id="add-member-btn">Add Member</button>
+                        <input type="text" id="new-member" data-translate-placeholder="members.newMember">
+                        <button class="btn btn-primary" id="add-member-btn" data-translate="members.addMemberBtn">Add Member</button>
                     </div>
                     <div class="items-list" id="members-list">
                         <!-- Members will be populated here -->
@@ -310,11 +322,11 @@
 
             <!-- Manage Categories Page -->
             <div id="categories" class="page">
-                <h1>Manage Categories</h1>
+                <h1 data-translate="categories.title">Manage Categories</h1>
                 <div class="manage-container">
                     <div class="add-item">
-                        <input type="text" id="new-category" placeholder="Enter category name">
-                        <button class="btn btn-primary" id="add-category-btn">Add Category</button>
+                        <input type="text" id="new-category" data-translate-placeholder="categories.newCategory">
+                        <button class="btn btn-primary" id="add-category-btn" data-translate="categories.addCategoryBtn">Add Category</button>
                     </div>
                     <div class="items-list" id="categories-list">
                         <!-- Categories will be populated here -->
@@ -324,11 +336,11 @@
 
             <!-- Manage Publishers Page -->
             <div id="publishers" class="page">
-                <h1>Manage Publishers</h1>
+                <h1 data-translate="publishers.title">Manage Publishers</h1>
                 <div class="manage-container">
                     <div class="add-item">
-                        <input type="text" id="new-publisher" placeholder="Enter publisher name">
-                        <button class="btn btn-primary" id="add-publisher-btn">Add Publisher</button>
+                        <input type="text" id="new-publisher" data-translate-placeholder="publishers.newPublisher">
+                        <button class="btn btn-primary" id="add-publisher-btn" data-translate="publishers.addPublisherBtn">Add Publisher</button>
                     </div>
                     <div class="items-list" id="publishers-list">
                         <!-- Publishers will be populated here -->

@@ -26,7 +26,41 @@ class LibraryManagementSystem {
 
         this.token = localStorage.getItem('token');
         if (this.token) {
+            // Validate token by making a test API call
+            this.validateToken();
+        }
+    }
+
+    async validateToken() {
+        try {
+            // Test token with a simple API call
+            await this.apiCall('/health');
+            // If successful, initialize app
             this.initializeApp();
+        } catch (error) {
+            // Token is invalid, clear it and show login
+            console.log('Invalid token, showing login page');
+            localStorage.removeItem('token');
+            this.token = null;
+            this.showLoginPage();
+        }
+    }
+
+    showLoginPage() {
+        document.getElementById('login').style.display = 'block';
+        document.querySelector('.app-container').style.display = 'none';
+    }
+
+    setupLogout() {
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    localStorage.removeItem('token');
+                    this.token = null;
+                    this.showLoginPage();
+                }
+            });
         }
     }
 
@@ -34,6 +68,7 @@ class LibraryManagementSystem {
         document.getElementById('login').style.display = 'none';
         document.querySelector('.app-container').style.display = 'flex';
         this.setupEventListeners();
+        this.setupLogout();
         this.loadDataFromAPI();
         this.showPage('dashboard');
     }

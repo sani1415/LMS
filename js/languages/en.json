@@ -163,7 +163,8 @@
     "all": "All",
     "none": "None",
     "select": "Select",
-    "clear": "Clear"
+    "clear": "Clear",
+    "logout": "Logout"
   },
   "messages": {
     "bookAdded": "Book added successfully!",

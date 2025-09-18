@@ -45,25 +45,19 @@ class I18n {
     }
 
     setupLanguageToggle() {
-        const toggleButton = document.getElementById('language-toggle');
-        if (toggleButton) {
-            toggleButton.addEventListener('click', () => {
-                const newLang = this.currentLanguage === 'ar' ? 'en' : 'ar';
-                this.loadLanguage(newLang);
+        const languageDropdown = document.getElementById('language-dropdown');
+        if (languageDropdown) {
+            languageDropdown.addEventListener('change', (e) => {
+                const selectedLang = e.target.value;
+                this.loadLanguage(selectedLang);
             });
         }
     }
 
     updateLanguageToggle() {
-        const currentLangSpan = document.getElementById('current-lang');
-        if (currentLangSpan) {
-            currentLangSpan.textContent = this.currentLanguage === 'ar' ? 'AR' : 'EN';
-        }
-        
-        const toggleButton = document.getElementById('language-toggle');
-        if (toggleButton) {
-            toggleButton.title = this.currentLanguage === 'ar' ? 
-                'Switch to English' : 'التبديل إلى العربية';
+        const languageDropdown = document.getElementById('language-dropdown');
+        if (languageDropdown) {
+            languageDropdown.value = this.currentLanguage;
         }
     }
 
