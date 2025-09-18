@@ -1,16 +1,16 @@
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from extensions import db, bcrypt
+from backend.extensions import db, bcrypt
 from datetime import datetime
 import os
-from config import config
+from backend.config import config
 
 # Initialize Flask app
 app = Flask(__name__)
 
 # Configuration
-config_name = os.environ.get('FLASK_ENV', 'development')
+config_name = os.environ.get('FLASK_ENV', 'development_mysql')  # Default to MySQL now
 app.config.from_object(config[config_name])
 
 # Import models first to get db instance
@@ -37,7 +37,7 @@ def serve_static_files(filename):
 
 from functools import wraps
 import jwt
-from models import User
+from backend.models import User
 
 def token_required(f):
     @wraps(f)
@@ -56,14 +56,15 @@ def token_required(f):
     return decorated
 
 # Import routes after db initialization
-from routes import *
-from auth_routes import *
-from init_db import create_sample_data
+from backend.routes import *
+from backend.auth_routes import *
+from backend.init_db import create_sample_data
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Create database tables
         # Add sample data if database is empty
+        from backend.models import Book
         if not Book.query.first():
             create_sample_data()
     

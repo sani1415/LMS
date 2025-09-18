@@ -18,11 +18,17 @@ class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///library.db'
 
+class DevelopmentMySQLConfig(Config):
+    """Development configuration with MySQL"""
+    DEBUG = True
+    # MySQL connection string format: mysql+pymysql://user:password@host:port/database
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root:@localhost:3306/library'
+
 class ProductionConfig(Config):
-    """Production configuration"""
+    """Production configuration for cPanel deployment"""
     DEBUG = False
-    # Use environment variable for production database
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    # cPanel MySQL format: mysql+pymysql://username:password@localhost/database_name
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://username:password@localhost/database_name'
 
 class TestingConfig(Config):
     """Testing configuration"""
@@ -32,6 +38,7 @@ class TestingConfig(Config):
 # Configuration dictionary
 config = {
     'development': DevelopmentConfig,
+    'development_mysql': DevelopmentMySQLConfig,
     'production': ProductionConfig,
     'testing': TestingConfig,
     'default': DevelopmentConfig

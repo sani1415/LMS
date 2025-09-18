@@ -3,25 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library Management System</title>
+    <title data-translate="app.title">Library Management System</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Arabic Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="login" class="page active">
-        <h1>Login</h1>
+        <h1 data-translate="login.title">Login</h1>
         <div class="form-container">
             <form id="login-form">
                 <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
+                    <label for="username" data-translate="login.username">Username</label>
+                    <input type="text" id="username" name="username" data-translate-placeholder="login.usernamePlaceholder" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
+                    <label for="password" data-translate="login.password">Password</label>
+                    <input type="password" id="password" name="password" data-translate-placeholder="login.passwordPlaceholder" required>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Login</button>
+                    <button type="submit" class="btn btn-primary" data-translate="login.loginButton">Login</button>
                 </div>
             </form>
         </div>
@@ -31,40 +35,44 @@
         <nav class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-book-open"></i>
-                <h2>LMS</h2>
+                <h2 data-translate="app.name">LMS</h2>
+                <button id="language-toggle" class="language-toggle" title="Switch Language">
+                    <i class="fas fa-language"></i>
+                    <span id="current-lang">EN</span>
+                </button>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item active" data-page="dashboard">
                     <i class="fas fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
+                    <span data-translate="navigation.dashboard">Dashboard</span>
                 </li>
                 <li class="nav-item" data-page="books">
                     <i class="fas fa-list"></i>
-                    <span>Book List</span>
+                    <span data-translate="navigation.books">Book List</span>
                 </li>
                 <li class="nav-item" data-page="add-book">
                     <i class="fas fa-plus-circle"></i>
-                    <span>Add Book</span>
+                    <span data-translate="navigation.addBook">Add Book</span>
                 </li>
                 <li class="nav-item" data-page="issue-history">
                     <i class="fas fa-history"></i>
-                    <span>Issue History</span>
+                    <span data-translate="navigation.issueHistory">Issue History</span>
                 </li>
                 <li class="nav-item" data-page="library-log">
                     <i class="fas fa-clipboard-list"></i>
-                    <span>Library Log</span>
+                    <span data-translate="navigation.libraryLog">Library Log</span>
                 </li>
                 <li class="nav-item" data-page="members">
                     <i class="fas fa-users"></i>
-                    <span>Manage Members</span>
+                    <span data-translate="navigation.members">Manage Members</span>
                 </li>
                 <li class="nav-item" data-page="categories">
                     <i class="fas fa-tags"></i>
-                    <span>Manage Categories</span>
+                    <span data-translate="navigation.categories">Manage Categories</span>
                 </li>
                 <li class="nav-item" data-page="publishers">
                     <i class="fas fa-building"></i>
-                    <span>Manage Publishers</span>
+                    <span data-translate="navigation.publishers">Manage Publishers</span>
                 </li>
             </ul>
         </nav>
@@ -73,14 +81,14 @@
         <main class="main-content">
             <!-- Dashboard Page -->
             <div id="dashboard" class="page active">
-                <h1>Dashboard</h1>
+                <h1 data-translate="dashboard.title">Dashboard</h1>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">
                             <i class="fas fa-book"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>Total Books</h3>
+                            <h3 data-translate="dashboard.totalBooks">Total Books</h3>
                             <p class="stat-number" id="total-books">0</p>
                         </div>
                     </div>
@@ -89,7 +97,7 @@
                             <i class="fas fa-user-edit"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>Total Authors</h3>
+                            <h3 data-translate="dashboard.totalAuthors">Total Authors</h3>
                             <p class="stat-number" id="total-authors">0</p>
                         </div>
                     </div>
@@ -98,7 +106,7 @@
                             <i class="fas fa-tags"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>Total Categories</h3>
+                            <h3 data-translate="dashboard.totalCategories">Total Categories</h3>
                             <p class="stat-number" id="total-categories">0</p>
                         </div>
                     </div>
@@ -107,7 +115,7 @@
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>Books Available</h3>
+                            <h3 data-translate="dashboard.booksAvailable">Books Available</h3>
                             <p class="stat-number" id="books-available">0</p>
                         </div>
                     </div>
@@ -116,7 +124,7 @@
                             <i class="fas fa-clock"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>Books Issued</h3>
+                            <h3 data-translate="dashboard.booksIssued">Books Issued</h3>
                             <p class="stat-number" id="books-issued">0</p>
                         </div>
                     </div>
@@ -364,6 +372,7 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
+    <script src="js/i18n.js"></script>
     <script src="js/app.js"></script>
     </div>
 </body>

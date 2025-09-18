@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from app import app
-from extensions import db, bcrypt
-from models import User
+from .extensions import db, bcrypt
+from .models import User
 import jwt
 from datetime import datetime, timedelta
 

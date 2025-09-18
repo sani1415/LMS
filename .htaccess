@@ -1,0 +1,16 @@
+# .htaccess file for cPanel Flask deployment
+# This tells Apache to use Passenger for Python
+
+PassengerAppRoot /home/yourusername/public_html
+PassengerAppType wsgi
+PassengerStartupFile passenger_wsgi.py
+PassengerPython /usr/bin/python3
+
+# Optional: Set environment
+SetEnv FLASK_ENV production
+
+# Redirect all requests to the Flask app
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ passenger_wsgi.py [QSA,L]

@@ -5,8 +5,8 @@ Run this script to create the database and populate it with sample data
 """
 
 from app import app
-from extensions import db
-from models import Book, Member, Category, Publisher, LibraryLog
+from .extensions import db
+from .models import Book, Member, Category, Publisher, LibraryLog
 
 def create_sample_data():
     """Create sample data for testing"""
