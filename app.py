@@ -60,13 +60,32 @@ from backend.routes import *
 from backend.auth_routes import *
 from backend.init_db import create_sample_data
 
-if __name__ == '__main__':
-    with app.app_context():
+# Initialize database for both local and cPanel deployment
+def init_app_database():
+    """Initialize database tables and create admin user if needed"""
+    try:
         db.create_all()  # Create database tables
+        
+        # Create admin user if no users exist
+        from backend.models import User, Book
+        if not User.query.first():
+            admin_user = User(username='admin', password='admin123')
+            db.session.add(admin_user)
+            db.session.commit()
+            print("✅ Admin user created: admin/admin123")
+        
         # Add sample data if database is empty
-        from backend.models import Book
         if not Book.query.first():
             create_sample_data()
-    
+            print("✅ Sample data created")
+            
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+
+# Initialize database when app starts (works for both local and cPanel)
+with app.app_context():
+    init_app_database()
+
+if __name__ == '__main__':
     # Only run Flask dev server locally, not on cPanel
     app.run(debug=True, host='0.0.0.0', port=5001)
