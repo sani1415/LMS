@@ -10,8 +10,23 @@ from backend.config import config
 app = Flask(__name__)
 
 # Configuration
-config_name = os.environ.get('FLASK_ENV', 'development_mysql')  # Default to MySQL now
-app.config.from_object(config[config_name])
+db_user = os.getenv("DB_USER")
+db_pass = os.getenv("DB_PASSWORD")
+db_host = os.getenv("DB_HOST", "localhost")
+db_name = os.getenv("DB_NAME")
+
+if db_user and db_pass and db_name:
+    # Use cPanel MySQL credentials
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "supersecretkey")  # required for JWT
+    print(f"✅ Using cPanel database: {db_name} as {db_user}@{db_host}")
+else:
+    # Fall back to config.py (development)
+    config_name = os.environ.get('FLASK_ENV', 'development_mysql')
+    app.config.from_object(config[config_name])
+    print(f"⚠️ Using fallback config: {config_name}")
+
 
 # Import models first to get db instance
 
