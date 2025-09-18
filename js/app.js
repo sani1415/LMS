@@ -480,7 +480,7 @@ class LibraryManagementSystem {
         const password = e.target.password.value;
 
         try {
-            const response = await this.apiCall('/login', {
+            const response = await this.apiCall('/api/login', {
                 method: 'POST',
                 body: JSON.stringify({ username, password })
             });
