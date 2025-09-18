@@ -1,14 +1,13 @@
-# .htaccess file for cPanel Flask deployment
-PassengerAppRoot /home/idarah786/public_html/maktabah
+# cPanel Python App Configuration
+PassengerEnabled On
 PassengerAppType wsgi
 PassengerStartupFile passenger_wsgi.py
-PassengerPython /usr/bin/python3
 
-# Set environment variables
+# Set production environment
 SetEnv FLASK_ENV production
 
-# Handle all requests through Flask
+# Handle requests
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ passenger_wsgi.py/$1 [QSA,L]
+RewriteRule ^(.*)$ passenger_wsgi.py [QSA,L]
