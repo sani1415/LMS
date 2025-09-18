@@ -68,4 +68,5 @@ if __name__ == '__main__':
         if not Book.query.first():
             create_sample_data()
     
+    # Only run Flask dev server locally, not on cPanel
     app.run(debug=True, host='0.0.0.0', port=5001)
