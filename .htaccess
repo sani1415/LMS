@@ -1,12 +1,14 @@
-# Simple .htaccess for cPanel Flask deployment
-# Let cPanel Python App handle the configuration
+# .htaccess file for cPanel Flask deployment
+PassengerAppRoot /home/idarah786/public_html/maktabah
+PassengerAppType wsgi
+PassengerStartupFile passenger_wsgi.py
+PassengerPython /usr/bin/python3
 
+# Set environment variables
+SetEnv FLASK_ENV production
+
+# Handle all requests through Flask
 RewriteEngine On
-
-# Serve static files directly
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^.*$ - [L]
-
-# Route all other requests to the Flask app
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ passenger_wsgi.py/$1 [QSA,L]

@@ -20,10 +20,6 @@ db.init_app(app)
 bcrypt.init_app(app)
 CORS(app)  # Enable CORS for frontend integration
 
-# Import routes after extensions are initialized
-from backend.routes import *
-from backend.auth_routes import *
-
 # Serve the main application
 @app.route('/')
 def serve_main_app():
@@ -59,7 +55,9 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
-# Import init_db for sample data
+# Import routes after db initialization
+from backend.routes import *
+from backend.auth_routes import *
 from backend.init_db import create_sample_data
 
 if __name__ == '__main__':
