@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from app import app, token_required
-from .models import db, Book, Member, Category, Publisher, IssueHistory, LibraryLog
+from .extensions import db
+from .models import Book, Member, Category, Publisher, IssueHistory, LibraryLog
 from datetime import datetime, date
 import json
 from sqlalchemy.exc import IntegrityError
