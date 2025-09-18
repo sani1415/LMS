@@ -10,23 +10,8 @@ from backend.config import config
 app = Flask(__name__)
 
 # Configuration
-db_user = os.getenv("DB_USER")
-db_pass = os.getenv("DB_PASSWORD")
-db_host = os.getenv("DB_HOST", "localhost")
-db_name = os.getenv("DB_NAME")
-
-if db_user and db_pass and db_name:
-    # Use cPanel MySQL credentials
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "supersecretkey")  # required for JWT
-    print(f"✅ Using cPanel database: {db_name} as {db_user}@{db_host}")
-else:
-    # Fall back to config.py (development)
-    config_name = os.environ.get('FLASK_ENV', 'development_mysql')
-    app.config.from_object(config[config_name])
-    print(f"⚠️ Using fallback config: {config_name}")
-
+config_name = os.environ.get('FLASK_ENV', 'development_mysql')  # Default to MySQL now
+app.config.from_object(config[config_name])
 
 # Import models first to get db instance
 
@@ -75,32 +60,12 @@ from backend.routes import *
 from backend.auth_routes import *
 from backend.init_db import create_sample_data
 
-# Initialize database for both local and cPanel deployment
-def init_app_database():
-    """Initialize database tables and create admin user if needed"""
-    try:
+if __name__ == '__main__':
+    with app.app_context():
         db.create_all()  # Create database tables
-        
-        # Create admin user if no users exist
-        from backend.models import User, Book
-        if not User.query.first():
-            admin_user = User(username='admin', password='admin123')
-            db.session.add(admin_user)
-            db.session.commit()
-            print("✅ Admin user created: admin/admin123")
-        
         # Add sample data if database is empty
+        from backend.models import Book
         if not Book.query.first():
             create_sample_data()
-            print("✅ Sample data created")
-            
-    except Exception as e:
-        print(f"Database initialization error: {e}")
-
-# Initialize database when app starts (works for both local and cPanel)
-with app.app_context():
-    init_app_database()
-
-if __name__ == '__main__':
-    # Only run Flask dev server locally, not on cPanel
+    
     app.run(debug=True, host='0.0.0.0', port=5001)
