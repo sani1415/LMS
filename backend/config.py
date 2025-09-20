@@ -1,12 +1,12 @@
+#
+# PASTE THIS ENTIRE CODE INTO: backend/config.py
+#
 import os
 
 class Config:
     """Base configuration class"""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-here'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'a-very-secure-default-key'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
-    # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///library.db'
     
     # Pagination defaults
     BOOKS_PER_PAGE = 100
@@ -14,31 +14,39 @@ class Config:
     HISTORY_PER_PAGE = 100
 
 class DevelopmentConfig(Config):
-    """Development configuration"""
+    """Development configuration for local testing"""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///library.db'
-
-class DevelopmentMySQLConfig(Config):
-    """Development configuration with MySQL"""
-    DEBUG = True
-    # MySQL connection string format: mysql+pymysql://user:password@host:port/database
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root:@localhost:3306/library'
+    # Using SQLite for simple local development to avoid database setup.
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///library_dev.db'
 
 class ProductionConfig(Config):
     """Production configuration for cPanel deployment"""
     DEBUG = False
-    # cPanel MySQL format: mysql+pymysql://username:password@localhost/database_name
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://username:password@localhost/database_name'
+    
+    # --- THIS SECTION IS NOW CORRECTED ---
+    # It builds the database connection string from the variables you set in cPanel.
+    DB_USER = os.environ.get('DB_USER')
+    DB_PASSWORD = os.environ.get('DB_PASSWORD')
+    DB_HOST = os.environ.get('DB_HOST')
+    DB_NAME = os.environ.get('DB_NAME')
+    
+    # Construct the database URI only if all parts are present
+    if all([DB_USER, DB_PASSWORD, DB_HOST, DB_NAME]):
+        SQLALCHEMY_DATABASE_URI = (
+            f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+        )
+    else:
+        # This will give a clear error if a variable is missing in cPanel
+        raise ValueError("One or more database environment variables are not set in cPanel.")
 
 class TestingConfig(Config):
     """Testing configuration"""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
-# Configuration dictionary
+# Configuration dictionary that the application will use
 config = {
     'development': DevelopmentConfig,
-    'development_mysql': DevelopmentMySQLConfig,
     'production': ProductionConfig,
     'testing': TestingConfig,
     'default': DevelopmentConfig
