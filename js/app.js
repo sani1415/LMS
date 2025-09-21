@@ -179,7 +179,7 @@ class LibraryManagementSystem {
     async loadPublishers() {
         try {
             const data = await this.apiCall('/publishers');
-            this.publishers = data.map(publisher => publisher.name);
+            this.publishers = data; // Store full publisher objects, not just names
         } catch (error) {
             console.error('Failed to load publishers:', error);
             this.publishers = [];
@@ -502,9 +502,22 @@ class LibraryManagementSystem {
         this.showModal('Error', `<p style="color: red;">${message}</p>`, () => this.closeModal());
     }
 
-    issueBook(bookId) {
+    async issueBook(bookId) {
+        console.log('issueBook called with bookId:', bookId);
         const book = this.books.find(b => b.id === bookId);
-        if (!book) return;
+        console.log('Found book:', book);
+        if (!book) {
+            console.error('Book not found with ID:', bookId);
+            return;
+        }
+
+        // Make sure members are loaded
+        console.log('Current members:', this.members);
+        if (this.members.length === 0) {
+            console.log('Loading members...');
+            await this.loadMembers();
+            console.log('Members loaded:', this.members);
+        }
 
         this.showModal('Issue Book', `
             <div class="form-group">
@@ -523,11 +536,29 @@ class LibraryManagementSystem {
                 <input type="date" id="return-date" required>
             </div>
         `, async () => {
+            console.log('Confirm button clicked for issue book');
             const member = document.getElementById('issue-member').value;
             const issueDate = document.getElementById('issue-date').value;
             const returnDate = document.getElementById('return-date').value;
             
+            console.log('Form values:', { member, issueDate, returnDate });
+            
+            // Validate all fields
+            if (!member) {
+                alert('Please select a member');
+                return;
+            }
+            if (!issueDate) {
+                alert('Please select an issue date');
+                return;
+            }
+            if (!returnDate) {
+                alert('Please select a return date');
+                return;
+            }
+            
             if (member && issueDate && returnDate) {
+                console.log('All fields validated, sending API request...');
                 try {
                     // Send to API
                     const response = await this.apiCall(`/books/${bookId}/issue`, {
@@ -1123,12 +1154,12 @@ class LibraryManagementSystem {
         
         container.innerHTML = this.publishers.map(publisher => `
             <div class="item-row">
-                <span class="item-name">${publisher}</span>
+                <span class="item-name">${publisher.name}</span>
                 <div class="action-buttons">
-                    <button class="btn btn-secondary btn-sm" onclick="lms.editPublisher('${publisher}')">
+                    <button class="btn btn-secondary btn-sm" onclick="lms.editPublisher('${publisher.name}')">
                         <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="lms.deletePublisher('${publisher}')">
+                    <button class="btn btn-danger btn-sm" onclick="lms.deletePublisher('${publisher.name}')">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
@@ -1139,7 +1170,7 @@ class LibraryManagementSystem {
     async addPublisher() {
         const input = document.getElementById('new-publisher');
         const name = input.value.trim();
-        if (name && !this.publishers.includes(name)) {
+        if (name && !this.publishers.find(p => p.name === name)) {
             try {
                 const response = await this.apiCall('/publishers', {
                     method: 'POST',
@@ -1164,14 +1195,13 @@ class LibraryManagementSystem {
         `, async () => {
             const newName = document.getElementById('edit-publisher-name').value.trim();
             if (newName && newName !== name) {
-                if (this.publishers.includes(newName)) {
+                if (this.publishers.find(p => p.name === newName)) {
                     alert('A publisher with this name already exists!');
                     return;
                 }
                 
                 try {
-                    const publisherData = await this.apiCall('/publishers');
-                    const publisher = publisherData.find(p => p.name === name);
+                    const publisher = this.publishers.find(p => p.name === name);
                     
                     if (!publisher) {
                         this.showError('Publisher not found!');
@@ -1201,8 +1231,7 @@ class LibraryManagementSystem {
     async deletePublisher(name) {
         this.showConfirmModal(`Are you sure you want to delete publisher "${name}"? Books from this publisher will be affected.`, async () => {
             try {
-                const publisherData = await this.apiCall('/publishers');
-                const publisher = publisherData.find(p => p.name === name);
+                const publisher = this.publishers.find(p => p.name === name);
                 
                 if (!publisher) {
                     this.showError('Publisher not found!');
@@ -1272,57 +1301,11 @@ class LibraryManagementSystem {
         }
     }
 
-    async editPublisher(name) {
-        this.showModal('Edit Publisher', `
-            <div class="form-group">
-                <label for="edit-publisher-name">Publisher Name</label>
-                <input type="text" id="edit-publisher-name" value="${name}" required>
-            </div>
-        `, async () => {
-            const newName = document.getElementById('edit-publisher-name').value.trim();
-            if (newName && newName !== name) {
-                if (this.publishers.includes(newName)) {
-                    alert('A publisher with this name already exists!');
-                    return;
-                }
-                
-                try {
-                    // Find the publisher in the full publisher data to get the ID
-                    const publisherData = await this.apiCall('/publishers');
-                    const publisher = publisherData.find(p => p.name === name);
-                    
-                    if (!publisher) {
-                        this.showError('Publisher not found!');
-                        return;
-                    }
-                    
-                    // Send update to API
-                    const response = await this.apiCall(`/publishers/${publisher.id}`, {
-                        method: 'PUT',
-                        body: JSON.stringify({
-                            name: newName
-                        })
-                    });
-                    
-                    // Reload data to get fresh state
-                    await this.loadDataFromAPI();
-                    
-                    // Show success message
-                    this.showModal('Success', `<p>Publisher "${name}" renamed to "${newName}" successfully!</p>`, () => this.closeModal());
-                    
-                } catch (error) {
-                    console.error('Failed to update publisher:', error);
-                    this.showError('Failed to update publisher. Please try again.');
-                }
-            }
-        });
-    }
 
     async deletePublisher(name) {
         this.showConfirmModal(`Are you sure you want to delete publisher "${name}"? Books from this publisher will be affected.`, async () => {
             try {
-                const publisherData = await this.apiCall('/publishers');
-                const publisher = publisherData.find(p => p.name === name);
+                const publisher = this.publishers.find(p => p.name === name);
                 
                 if (!publisher) {
                     this.showError('Publisher not found!');
