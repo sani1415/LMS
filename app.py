@@ -6,7 +6,6 @@ from flask import Flask, send_from_directory
 from flask_cors import CORS
 from backend.config import config
 from backend.extensions import db, bcrypt
-from backend.init_db import create_sample_data
 from backend.models import Book, User # Import User model for token_required
 
 # --- THIS DECORATOR IS MOVED HERE FOR BETTER STRUCTURE ---
