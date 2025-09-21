@@ -19,6 +19,12 @@ class DevelopmentConfig(Config):
     # Using SQLite for simple local development to avoid database setup.
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///library_dev.db'
 
+class DevelopmentMySQLConfig(Config):
+    """Development configuration with MySQL for local testing"""
+    DEBUG = True
+    # MySQL configuration for local development
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root:@localhost/library'
+
 class ProductionConfig(Config):
     """Production configuration for cPanel deployment"""
     DEBUG = False
@@ -30,14 +36,13 @@ class ProductionConfig(Config):
     DB_HOST = os.environ.get('DB_HOST')
     DB_NAME = os.environ.get('DB_NAME')
     
-    # Construct the database URI only if all parts are present
+    # Construct the database URI - set to None if variables are missing
+    # This prevents errors during class definition, error will only occur if this config is actually used
     if all([DB_USER, DB_PASSWORD, DB_HOST, DB_NAME]):
-        SQLALCHEMY_DATABASE_URI = (
-            f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
-        )
+        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
     else:
-        # This will give a clear error if a variable is missing in cPanel
-        raise ValueError("One or more database environment variables are not set in cPanel.")
+        # Set to None - the application will check this and provide a clear error message
+        SQLALCHEMY_DATABASE_URI = None
 
 class TestingConfig(Config):
     """Testing configuration"""
@@ -47,6 +52,7 @@ class TestingConfig(Config):
 # Configuration dictionary that the application will use
 config = {
     'development': DevelopmentConfig,
+    'development_mysql': DevelopmentMySQLConfig,
     'production': ProductionConfig,
     'testing': TestingConfig,
     'default': DevelopmentConfig
