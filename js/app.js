@@ -210,12 +210,30 @@ class LibraryManagementSystem {
 
     // Event Listeners Setup
     setupEventListeners() {
-        // Navigation
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                this.toggleMobileMenu();
+            });
+        }
+        
+        if (mobileOverlay) {
+            mobileOverlay.addEventListener('click', () => {
+                this.closeMobileMenu();
+            });
+        }
+        
+        // Close mobile menu when clicking on nav items
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
                 const page = item.dataset.page;
                 this.showPage(page);
                 this.updateActiveNav(item);
+                this.closeMobileMenu(); // Close mobile menu after navigation
             });
         });
 
@@ -273,6 +291,13 @@ class LibraryManagementSystem {
         // Back to top
         document.getElementById('back-to-top').addEventListener('click', () => this.scrollToTop());
         window.addEventListener('scroll', () => this.toggleBackToTop());
+
+        // Handle window resize for mobile menu
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                this.closeMobileMenu(); // Close mobile menu when resizing to desktop
+            }
+        });
 
         // Populate dropdowns
         this.populateDropdowns();
@@ -348,6 +373,49 @@ class LibraryManagementSystem {
     updateActiveNav(activeItem) {
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
         activeItem.classList.add('active');
+    }
+
+    // Mobile Menu Functions
+    toggleMobileMenu() {
+        const sidebar = document.querySelector('.sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        
+        if (sidebar && mobileOverlay && mobileMenuToggle) {
+            const isOpen = sidebar.classList.contains('mobile-open');
+            
+            if (isOpen) {
+                this.closeMobileMenu();
+            } else {
+                this.openMobileMenu();
+            }
+        }
+    }
+
+    openMobileMenu() {
+        const sidebar = document.querySelector('.sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        
+        if (sidebar && mobileOverlay && mobileMenuToggle) {
+            sidebar.classList.add('mobile-open');
+            mobileOverlay.classList.add('active');
+            mobileMenuToggle.innerHTML = '<i class="fas fa-times"></i>'; // Change to X icon
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+    }
+
+    closeMobileMenu() {
+        const sidebar = document.querySelector('.sidebar');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        
+        if (sidebar && mobileOverlay && mobileMenuToggle) {
+            sidebar.classList.remove('mobile-open');
+            mobileOverlay.classList.remove('active');
+            mobileMenuToggle.innerHTML = '<i class="fas fa-bars"></i>'; // Change back to hamburger icon
+            document.body.style.overflow = ''; // Restore scrolling
+        }
     }
 
     // Dashboard
