@@ -36,21 +36,30 @@ class DevelopmentSQLServerConfig(Config):
 class ProductionConfig(Config):
     """Production configuration for cPanel deployment"""
     DEBUG = False
-    
+
     # --- THIS SECTION IS NOW CORRECTED ---
     # It builds the database connection string from the variables you set in cPanel.
     DB_USER = os.environ.get('DB_USER')
     DB_PASSWORD = os.environ.get('DB_PASSWORD')
     DB_HOST = os.environ.get('DB_HOST')
     DB_NAME = os.environ.get('DB_NAME')
-    
+
     # Construct the database URI - set to None if variables are missing
     # This prevents errors during class definition, error will only occur if this config is actually used
     if all([DB_USER, DB_PASSWORD, DB_HOST, DB_NAME]):
-        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}?charset=utf8mb4&connect_timeout=60&read_timeout=60&write_timeout=60&autocommit=true"
     else:
         # Set to None - the application will check this and provide a clear error message
         SQLALCHEMY_DATABASE_URI = None
+
+    # Connection pool settings for cPanel stability
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 3,
+        'pool_timeout': 20,
+        'pool_recycle': 280,  # Recycle connections before they timeout
+        'pool_pre_ping': True,  # Verify connections before use
+        'max_overflow': 0
+    }
 
 class TestingConfig(Config):
     """Testing configuration"""

@@ -28,6 +28,35 @@ bcrypt.init_app(app)
 migrate = Migrate(app, db)  # Initialize Flask-Migrate
 CORS(app)  # Enable CORS for frontend integration
 
+# Add error handlers for database issues
+@app.teardown_appcontext
+def close_db_session(error):
+    """Ensure database sessions are properly closed"""
+    if hasattr(db, 'session'):
+        try:
+            if error:
+                db.session.rollback()
+            db.session.remove()
+        except Exception as e:
+            print(f"Session cleanup error: {e}")
+
+@app.errorhandler(Exception)
+def handle_database_errors(error):
+    """Handle database connection errors gracefully"""
+    if 'MySQL server has gone away' in str(error) or 'Broken pipe' in str(error):
+        print(f"Database connection error handled: {error}")
+        try:
+            db.session.rollback()
+        except:
+            pass
+        try:
+            db.session.remove()
+        except:
+            pass
+        # Return a generic error response instead of crashing
+        return {"error": "Database connection issue, please try again"}, 500
+    raise error
+
 def ensure_database_exists():
     """Create database if it doesn't exist"""
     connection = None
@@ -103,10 +132,13 @@ def serve_static_files(filename):
 def create_admin_user():
     """Create default admin user if none exists"""
     try:
-        # Check if any admin user exists
-        if not User.query.first():
+        admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
+
+        # Check if specific admin user exists (not just any user)
+        existing_admin = User.query.filter_by(username=admin_username).first()
+
+        if not existing_admin:
             # Create default admin user
-            admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
             admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
             admin = User(username=admin_username, password=admin_password)
@@ -117,11 +149,14 @@ def create_admin_user():
             print(f"Admin password: {admin_password}")
             print("IMPORTANT: Change the admin password after first login!")
         else:
-            print("Admin user already exists")
+            print(f"Admin user '{admin_username}' already exists")
 
     except Exception as e:
         print(f"Error creating admin user: {e}")
-        db.session.rollback()
+        try:
+            db.session.rollback()
+        except:
+            pass
 
 def create_sample_data():
     """Create sample data for local development only"""
@@ -220,16 +255,18 @@ def create_sample_data():
         print(f"Error creating sample data: {e}")
         db.session.rollback()
 
-# Global flag to prevent multiple initializations
-_database_initialized = False
-
 def initialize_database():
     """Initialize database for both development and production"""
-    global _database_initialized
-
-    if _database_initialized:
-        print("Database already initialized, skipping...")
-        return
+    # Use database marker instead of global flag to persist across restarts
+    try:
+        with app.app_context():
+            # Check if initialization marker exists in database
+            result = db.session.execute(db.text("SELECT 1 FROM information_schema.tables WHERE table_name = 'initialization_marker'"))
+            if result.fetchone() and config_name == 'production':
+                print("Database already initialized (marker found), skipping...")
+                return
+    except:
+        pass  # Database might not be ready yet
 
     # Ensure database exists/is accessible
     ensure_database_exists()
@@ -260,7 +297,15 @@ def initialize_database():
             create_sample_data()
             print("Sample data created.")
 
-    _database_initialized = True
+        # Create initialization marker for production to prevent re-runs
+        if config_name == 'production':
+            try:
+                db.session.execute(db.text("CREATE TABLE IF NOT EXISTS initialization_marker (id INT PRIMARY KEY DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"))
+                db.session.execute(db.text("INSERT IGNORE INTO initialization_marker (id) VALUES (1)"))
+                db.session.commit()
+            except:
+                pass
+
     print("Database initialization completed")
 
 if __name__ == '__main__':
