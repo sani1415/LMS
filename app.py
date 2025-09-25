@@ -30,6 +30,8 @@ CORS(app)  # Enable CORS for frontend integration
 
 def ensure_database_exists():
     """Create database if it doesn't exist"""
+    connection = None
+    cursor = None
     try:
         if config_name == 'development_mysql':
             # Local development - connect without specifying database
@@ -63,12 +65,15 @@ def ensure_database_exists():
             )
             print(f"Production database '{db_name}' connection verified")
 
-        cursor.close()
-        connection.close()
-
     except Exception as e:
         print(f"Error with database: {e}")
         # Don't raise exception - let the app continue and let SQLAlchemy handle it
+    finally:
+        # Safely close connections
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
 
 # Import and register routes after app and db are initialized to avoid circular imports
 from backend.routes import register_routes
@@ -215,8 +220,17 @@ def create_sample_data():
         print(f"Error creating sample data: {e}")
         db.session.rollback()
 
+# Global flag to prevent multiple initializations
+_database_initialized = False
+
 def initialize_database():
     """Initialize database for both development and production"""
+    global _database_initialized
+
+    if _database_initialized:
+        print("Database already initialized, skipping...")
+        return
+
     # Ensure database exists/is accessible
     ensure_database_exists()
 
@@ -245,6 +259,9 @@ def initialize_database():
             print("Database is empty, creating sample data...")
             create_sample_data()
             print("Sample data created.")
+
+    _database_initialized = True
+    print("Database initialization completed")
 
 if __name__ == '__main__':
     # This block runs only when you execute "python app.py" locally
