@@ -7,6 +7,7 @@ from flask_cors import CORS
 from backend.config import config
 from backend.extensions import db, bcrypt
 from backend.models import Book, User, Category, Publisher, Member # Import models
+from flask_migrate import Migrate
 
 
 # Determine the config name from the environment variable
@@ -23,6 +24,7 @@ if config_name == 'production' and app.config.get('SQLALCHEMY_DATABASE_URI') is 
 # Initialize extensions with the app
 db.init_app(app)
 bcrypt.init_app(app)
+migrate = Migrate(app, db)  # Initialize Flask-Migrate
 CORS(app)  # Enable CORS for frontend integration
 
 # Import and register routes after app and db are initialized to avoid circular imports
@@ -173,11 +175,9 @@ def create_sample_data():
 if __name__ == '__main__':
     # This block runs only when you execute "python app.py" locally
     with app.app_context():
-        try:
-            db.drop_all()  # Drop all tables first for clean start
-        except:
-            pass  # Ignore errors if tables don't exist
-        db.create_all()  # Create database tables
+        # Run database migrations automatically
+        from flask_migrate import upgrade
+        upgrade()  # This will run any pending migrations
 
         # Create admin user first
         create_admin_user()
