@@ -252,8 +252,8 @@ class LibraryManagementSystem {
         document.getElementById('prev-page').addEventListener('click', () => this.previousPage());
         document.getElementById('next-page').addEventListener('click', () => this.nextPage());
 
-        // Export Excel
-        document.getElementById('export-excel').addEventListener('click', () => this.exportToExcel());
+        // Export CSV
+        document.getElementById('export-excel').addEventListener('click', () => this.exportToCSV());
 
         // Add book form
         const addBookForm = document.getElementById('add-book-form');
@@ -267,8 +267,15 @@ class LibraryManagementSystem {
         document.getElementById('bookName').addEventListener('input', () => this.checkDuplicates('bookName'));
         document.getElementById('author').addEventListener('input', () => this.checkDuplicates('author'));
 
-        // Import Excel
-        document.getElementById('import-excel').addEventListener('click', () => this.importFromExcel());
+        // Import CSV
+        document.getElementById('import-excel').addEventListener('click', () => this.importFromCSV());
+
+        // Download CSV Template
+        document.getElementById('download-template').addEventListener('click', () => this.downloadCSVTemplate());
+
+        // Bulk operations
+        document.getElementById('select-all-books').addEventListener('change', (e) => this.toggleSelectAllBooks(e.target.checked));
+        document.getElementById('bulk-delete-btn').addEventListener('click', () => this.bulkDeleteBooks());
 
         // Add log entry
         document.getElementById('add-log-btn').addEventListener('click', () => this.addLogEntry());
@@ -453,37 +460,46 @@ class LibraryManagementSystem {
 
         tbody.innerHTML = pageBooks.map((book, index) => `
             <tr>
-                <td>${startIndex + index + 1}</td>
+                <td>
+                    <input type="checkbox" class="book-select" data-book-id="${book.library_id || book.id}">
+                </td>
+                <td>${book.library_id || book.id}</td>
                 <td>${book.bookName}</td>
                 <td>${book.author}</td>
                 <td>${book.category}</td>
+                <td>${book.editor || '-'}</td>
+                <td>${book.volumes || '-'}</td>
                 <td>${book.publisher || '-'}</td>
                 <td>${book.year || '-'}</td>
-                <td>${book.volumes || '-'}</td>
-                <td>${book.note || '-'}</td>
+                <td>${book.copies || '-'}</td>
                 <td>
                     <span class="status-badge ${book.status.toLowerCase()}">${book.status}</span>
                 </td>
+                <td>${book.completion_status || '-'}</td>
+                <td>${book.note || '-'}</td>
                 <td>
                     <div class="action-buttons">
-                        ${book.status === 'Available' ? 
-                            `<button class="btn btn-primary btn-sm" onclick="lms.issueBook(${book.id})">
+                        ${book.status === 'Available' ?
+                            `<button class="btn btn-primary btn-sm" onclick="lms.issueBook(${book.library_id || book.id})">
                                 <i class="fas fa-share"></i> Issue
-                            </button>` : 
-                            `<button class="btn btn-secondary btn-sm" onclick="lms.returnBook(${book.id})">
+                            </button>` :
+                            `<button class="btn btn-secondary btn-sm" onclick="lms.returnBook(${book.library_id || book.id})">
                                 <i class="fas fa-undo"></i> Return
                             </button>`
                         }
-                        <button class="btn btn-secondary btn-sm" onclick="lms.editBook(${book.id})">
+                        <button class="btn btn-secondary btn-sm" onclick="lms.editBook(${book.library_id || book.id})">
                             <i class="fas fa-edit"></i> Edit
                         </button>
-                        <button class="btn btn-danger btn-sm" onclick="lms.deleteBook(${book.id})">
+                        <button class="btn btn-danger btn-sm" onclick="lms.deleteBook(${book.library_id || book.id})">
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
                 </td>
             </tr>
         `).join('');
+
+        // Add event listeners to new checkboxes
+        this.setupBulkSelectionListeners();
 
         this.updatePagination(filteredBooks.length);
     }
@@ -800,10 +816,14 @@ class LibraryManagementSystem {
         const bookData = {
             bookName: formData.get('bookName'),
             author: formData.get('author'),
-            volumes: formData.get('volumes') || 1,
             category: formData.get('category'),
+            editor: formData.get('editor') || null,
+            volumes: formData.get('volumes') || 1,
             publisher: formData.get('publisher') || null,
             year: formData.get('year') || null,
+            copies: formData.get('copies') || 1,
+            status: formData.get('status') || 'Available',
+            completion_status: formData.get('completion_status') || null,
             note: formData.get('note') || null
         };
 
@@ -1451,111 +1471,257 @@ class LibraryManagementSystem {
     }
 
     // Export/Import
-    exportToExcel() {
-        const filteredBooks = this.getFilteredBooks();
-        const csvContent = this.convertToCSV(filteredBooks);
-        this.downloadCSV(csvContent, 'library_books.csv');
+    async exportToCSV() {
+        try {
+            // Show loading message
+            this.showError('Exporting books to CSV...', false);
+
+            // Download CSV file from server with UTF-8 support
+            const response = await fetch(`${this.apiBaseUrl}/books/export-csv`, {
+                headers: {
+                    'x-access-token': this.token
+                }
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'library_books_export.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Clean up
+                setTimeout(() => window.URL.revokeObjectURL(url), 100);
+
+                alert('Books exported successfully to CSV with UTF-8 encoding!\nSupports Arabic, Bengali, and other languages.');
+            } else {
+                alert('Error exporting books');
+            }
+
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Error exporting books: ' + error.message);
+        }
     }
 
-    convertToCSV(books) {
-        const headers = ['Book Name', 'Author', 'Category', 'Publisher', 'Year', 'Volumes', 'Special Note', 'Status'];
-        const rows = books.map(book => [
-            book.bookName,
-            book.author,
-            book.category,
-            book.publisher || '',
-            book.year || '',
-            book.volumes || '',
-            book.note || '',
-            book.status
-        ]);
-        
-        return [headers, ...rows].map(row => 
-            row.map(cell => `"${cell}"`).join(',')
-        ).join('\n');
-    }
-
-    downloadCSV(content, filename) {
-        const blob = new Blob([content], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        window.URL.revokeObjectURL(url);
-    }
-
-    importFromExcel() {
+    importFromCSV() {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.csv,.xlsx,.xls';
-        input.onchange = (e) => {
+        input.accept = '.csv';
+        input.onchange = async (e) => {
             const file = e.target.files[0];
             if (file) {
-                this.processImportFile(file);
+                await this.processCSVImport(file);
             }
         };
         input.click();
     }
 
-    processImportFile(file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const content = e.target.result;
-                const books = this.parseCSV(content);
-                this.importBooks(books);
-            } catch (error) {
-                alert('Error processing file: ' + error.message);
+    async processCSVImport(file) {
+        try {
+            // Validate file type
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                alert('Please select a CSV file (.csv)\nCSV format supports Arabic, Bengali, and other languages with UTF-8 encoding.');
+                return;
             }
-        };
-        reader.readAsText(file);
-    }
 
-    parseCSV(content) {
-        const lines = content.split('\n');
-        const headers = lines[0].split(',').map(h => h.replace(/"/g, ''));
-        const books = [];
-        
-        for (let i = 1; i < lines.length; i++) {
-            if (lines[i].trim()) {
-                const values = lines[i].split(',').map(v => v.replace(/"/g, ''));
-                const book = {};
-                headers.forEach((header, index) => {
-                    book[header.toLowerCase().replace(/\s+/g, '')] = values[index] || '';
-                });
-                books.push(book);
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show loading message
+            this.showError('Importing books from CSV file with UTF-8 encoding...', false);
+
+            // Upload file to server
+            const response = await fetch(`${this.apiBaseUrl}/books/import-csv`, {
+                method: 'POST',
+                headers: {
+                    'x-access-token': this.token
+                },
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Success
+                let message = result.message;
+                if (result.updated_count > 0) {
+                    message += `\n\n✅ Smart Update: ${result.updated_count} existing books were updated with new information instead of creating duplicates!`;
+                }
+                if (result.errors && result.errors.length > 0) {
+                    message += '\n\nErrors encountered:\n' + result.errors.join('\n');
+                }
+                message += '\n\nNote: CSV format perfectly supports Arabic, Bengali, and other languages!';
+                alert(message);
+
+                // Reload data to reflect changes
+                await this.loadBooks();
+                this.updateDashboard();
+                this.renderBooksTable();
+
+            } else {
+                // Error
+                alert('Import failed: ' + result.error);
             }
+
+        } catch (error) {
+            console.error('CSV import error:', error);
+            alert('Error importing CSV file: ' + error.message);
         }
-        
-        return books;
     }
 
-    importBooks(books) {
-        let imported = 0;
-        books.forEach(bookData => {
-            if (bookData.bookname && bookData.author && bookData.category) {
-                const book = {
-                    id: Date.now() + Math.random(),
-                    bookName: bookData.bookname,
-                    author: bookData.author,
-                    volumes: bookData.volumes || null,
-                    category: bookData.category,
-                    publisher: bookData.publisher || null,
-                    year: bookData.year || null,
-                    note: bookData.specialnote || null,
-                    status: 'Available'
-                };
-                
-                this.books.push(book);
-                imported++;
+    async downloadCSVTemplate() {
+        try {
+            // Download CSV template with multilingual support
+            const response = await fetch(`${this.apiBaseUrl}/books/csv-template`, {
+                headers: {
+                    'x-access-token': this.token
+                }
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'book_import_template.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Clean up
+                setTimeout(() => window.URL.revokeObjectURL(url), 100);
+
+                // Show template info
+                this.showCSVTemplateInfo();
+            } else {
+                alert('Error downloading CSV template');
             }
+
+        } catch (error) {
+            console.error('CSV template download error:', error);
+            alert('Error downloading CSV template: ' + error.message);
+        }
+    }
+
+    async showCSVTemplateInfo() {
+        try {
+            const response = await this.apiCall('/books/csv-template-info');
+
+            if (response.message) {
+                const templateInfo = `
+CSV Template Downloaded! 🌍
+
+Format: ${response.file_format}
+Encoding: ${response.encoding}
+
+Required Columns:
+• ${response.required_columns.join('\n• ')}
+
+Optional Columns:
+• ${response.optional_columns.join('\n• ')}
+
+Multilingual Support:
+${response.multilingual_support.join('\n')}
+
+Instructions:
+${response.instructions.join('\n')}
+
+The template contains examples in English, Bengali (বাংলা), and Arabic (العربية).
+                `;
+                alert(templateInfo);
+            }
+        } catch (error) {
+            console.error('CSV template info error:', error);
+        }
+    }
+
+    // Setup bulk selection listeners for dynamically created checkboxes
+    setupBulkSelectionListeners() {
+        const checkboxes = document.querySelectorAll('.book-select');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => this.updateBulkDeleteButton());
         });
-        
-        this.addLogEntry(`${imported} books imported from file`);
-        this.updateDashboard();
-        this.renderBooksTable();
-        alert(`Successfully imported ${imported} books!`);
+    }
+
+    // Bulk Operations
+    toggleSelectAllBooks(checked) {
+        const checkboxes = document.querySelectorAll('.book-select');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = checked;
+        });
+        this.updateBulkDeleteButton();
+    }
+
+    updateBulkDeleteButton() {
+        const selectedCheckboxes = document.querySelectorAll('.book-select:checked');
+        const selectedCount = selectedCheckboxes.length;
+        const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+        const selectedCountSpan = document.getElementById('selected-count');
+
+        selectedCountSpan.textContent = selectedCount;
+
+        if (selectedCount > 0) {
+            bulkDeleteBtn.style.display = 'inline-block';
+        } else {
+            bulkDeleteBtn.style.display = 'none';
+        }
+
+        // Update select all checkbox state
+        const totalCheckboxes = document.querySelectorAll('.book-select');
+        const selectAllCheckbox = document.getElementById('select-all-books');
+        selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < totalCheckboxes.length;
+        selectAllCheckbox.checked = selectedCount > 0 && selectedCount === totalCheckboxes.length;
+    }
+
+    async bulkDeleteBooks() {
+        const selectedCheckboxes = document.querySelectorAll('.book-select:checked');
+        const selectedBookIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.bookId));
+
+        if (selectedBookIds.length === 0) {
+            alert('No books selected');
+            return;
+        }
+
+        const bookNames = Array.from(selectedCheckboxes).map(cb => {
+            const row = cb.closest('tr');
+            return row.cells[2].textContent; // Book name column
+        });
+
+        const confirmMessage = `Are you sure you want to delete ${selectedBookIds.length} selected books?\n\nBooks to delete:\n${bookNames.slice(0, 5).join('\n')}${bookNames.length > 5 ? '\n...' : ''}`;
+
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        try {
+            const response = await this.apiCall('/books/bulk-delete', {
+                method: 'POST',
+                body: JSON.stringify({ book_ids: selectedBookIds })
+            });
+
+            alert(response.message);
+
+            // Reload all data to update the application
+            await this.loadBooks();
+            await this.loadDashboardData();
+            this.updateDashboard();
+            this.renderBooksTable();
+
+            // Reset bulk selection
+            document.getElementById('select-all-books').checked = false;
+            this.updateBulkDeleteButton();
+
+        } catch (error) {
+            console.error('Bulk delete error:', error);
+            alert('Error deleting books: ' + error.message);
+        }
     }
 
     // Back to Top

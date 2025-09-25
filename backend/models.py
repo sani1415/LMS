@@ -15,34 +15,65 @@ book_publishers = db.Table('book_publishers',
 )
 
 class Book(db.Model):
+    # 1. library_id (auto-generated primary key)
     id = db.Column(db.Integer, primary_key=True)
+
+    # 2. book_name (required)
     book_name = db.Column(db.String(200), nullable=False)
+
+    # 3. author (required)
     author = db.Column(db.String(100), nullable=False)
-    volumes = db.Column(db.Integer, default=1)
+
+    # 4. category (required)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+
+    # 5. editor (optional)
+    editor = db.Column(db.String(100))
+
+    # 6. volumes (optional, default 1)
+    volumes = db.Column(db.Integer, default=1)
+
+    # 7. publisher_id (optional)
     publisher_id = db.Column(db.Integer, db.ForeignKey('publisher.id'))
+
+    # 8. year (optional)
     year = db.Column(db.Integer)
-    note = db.Column(db.Text)
+
+    # 9. copies (optional, default 1)
+    copies = db.Column(db.Integer, default=1)
+
+    # 10. status (optional, default Available)
     status = db.Column(db.String(20), default='Available')  # Available, Issued
+
+    # 11. completion_status (optional)
+    completion_status = db.Column(db.String(50))  # Complete, Incomplete, In Progress, etc.
+
+    # 12. note (optional)
+    note = db.Column(db.Text)
+
+    # System fields
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     category = db.relationship('Category', backref='books')
     publisher = db.relationship('Publisher', backref='books')
     issue_records = db.relationship('IssueHistory', backref='book', lazy='dynamic')
-    
+
     def to_dict(self):
         return {
-            'id': self.id,
+            'library_id': self.id,
             'bookName': self.book_name,
             'author': self.author,
-            'volumes': self.volumes,
             'category': self.category.name if self.category else None,
+            'editor': self.editor,
+            'volumes': self.volumes,
             'publisher': self.publisher.name if self.publisher else None,
             'year': self.year,
-            'note': self.note,
+            'copies': self.copies,
             'status': self.status,
+            'completion_status': self.completion_status,
+            'note': self.note,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

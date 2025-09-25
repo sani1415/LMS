@@ -10,7 +10,7 @@ from backend.models import Book, User, Category, Publisher, Member # Import mode
 
 
 # Determine the config name from the environment variable
-config_name = os.environ.get('FLASK_ENV', 'default')
+config_name = os.environ.get('FLASK_ENV', 'development_mysql')
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -50,12 +50,35 @@ def serve_static_files(filename):
     return send_from_directory('.', filename)
 # --- END OF STATIC FILE SERVING ---
 
+def create_admin_user():
+    """Create default admin user if none exists"""
+    try:
+        # Check if any admin user exists
+        if not User.query.first():
+            # Create default admin user
+            admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
+            admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
+
+            admin = User(username=admin_username, password=admin_password)
+            db.session.add(admin)
+            db.session.commit()
+
+            print(f"Admin user created: {admin_username}")
+            print(f"Admin password: {admin_password}")
+            print("IMPORTANT: Change the admin password after first login!")
+        else:
+            print("Admin user already exists")
+
+    except Exception as e:
+        print(f"Error creating admin user: {e}")
+        db.session.rollback()
+
 def create_sample_data():
     """Create sample data for local development only"""
     # Only run this in development mode, never in production
     if app.config.get('DEBUG') is False:
         return
-    
+
     try:
         # Create sample categories
         if not Category.query.first():
@@ -97,14 +120,45 @@ def create_sample_data():
             penguin_pub = Publisher.query.filter_by(name='Penguin Books').first()
             
             books = [
-                Book(book_name='Sample Fiction Book', author='Sample Author', 
-                     category_id=fiction_cat.id if fiction_cat else 1,
-                     publisher_id=penguin_pub.id if penguin_pub else 1,
-                     year=2023, volumes=1),
-                Book(book_name='Sample Science Book', author='Science Author',
-                     category_id=science_cat.id if science_cat else 2,
-                     publisher_id=penguin_pub.id if penguin_pub else 1,
-                     year=2023, volumes=1)
+                Book(
+                    book_name='The Great Gatsby',
+                    author='F. Scott Fitzgerald',
+                    category_id=fiction_cat.id if fiction_cat else 1,
+                    editor='Maxwell Perkins',
+                    volumes=1,
+                    publisher_id=penguin_pub.id if penguin_pub else 1,
+                    year=1925,
+                    copies=2,
+                    status='Available',
+                    completion_status='Complete',
+                    note='Classic American novel about the Jazz Age'
+                ),
+                Book(
+                    book_name='To Kill a Mockingbird',
+                    author='Harper Lee',
+                    category_id=fiction_cat.id if fiction_cat else 1,
+                    editor='Tay Hohoff',
+                    volumes=1,
+                    publisher_id=penguin_pub.id if penguin_pub else 1,
+                    year=1960,
+                    copies=1,
+                    status='Available',
+                    completion_status='Complete',
+                    note='Pulitzer Prize winner'
+                ),
+                Book(
+                    book_name='Introduction to Physics',
+                    author='John Smith',
+                    category_id=science_cat.id if science_cat else 2,
+                    editor=None,
+                    volumes=2,
+                    publisher_id=penguin_pub.id if penguin_pub else 1,
+                    year=2020,
+                    copies=3,
+                    status='Available',
+                    completion_status='Incomplete',
+                    note='Missing volume 2'
+                )
             ]
             for book in books:
                 db.session.add(book)
@@ -120,10 +174,14 @@ if __name__ == '__main__':
     # This block runs only when you execute "python app.py" locally
     with app.app_context():
         db.create_all()  # Create database tables
+
+        # Create admin user first
+        create_admin_user()
+
         # Add sample data if the database is empty
         if not Book.query.first():
             print("Database is empty, creating sample data...")
             create_sample_data()
             print("Sample data created.")
-    
+
     app.run(debug=True, host='0.0.0.0', port=5001)

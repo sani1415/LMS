@@ -2,6 +2,9 @@ from flask import request, jsonify
 from .models import db, Book, Member, Category, Publisher, IssueHistory, LibraryLog
 from datetime import datetime, date
 import json
+import pandas as pd
+import os
+from werkzeug.utils import secure_filename
 from sqlalchemy.exc import IntegrityError
 from .utils import token_required
 
@@ -82,18 +85,18 @@ def register_routes(app):
     def add_book(current_user):
         try:
             data = request.get_json()
-            
+
             # Validate required fields
             if not data.get('bookName') or not data.get('author') or not data.get('category'):
                 return jsonify({'error': 'Book name, author, and category are required'}), 400
-            
+
             # Get or create category
             category = Category.query.filter_by(name=data['category']).first()
             if not category:
                 category = Category(name=data['category'])
                 db.session.add(category)
                 db.session.flush()
-            
+
             # Get or create publisher
             publisher = None
             if data.get('publisher'):
@@ -102,24 +105,27 @@ def register_routes(app):
                     publisher = Publisher(name=data['publisher'])
                     db.session.add(publisher)
                     db.session.flush()
-            
-            # Create book
+
+            # Create book with all 12 fields
             book = Book(
                 book_name=data['bookName'],
                 author=data['author'],
-                volumes=data.get('volumes', 1),
                 category_id=category.id,
+                editor=data.get('editor'),
+                volumes=data.get('volumes', 1),
                 publisher_id=publisher.id if publisher else None,
                 year=data.get('year'),
-                note=data.get('note'),
-                status='Available'
+                copies=data.get('copies', 1),
+                status=data.get('status', 'Available'),
+                completion_status=data.get('completion_status'),
+                note=data.get('note')
             )
-            
+
             db.session.add(book)
             db.session.commit()
-            
+
             add_log_entry(f'New book "{data["bookName"]}" added to library', 'Book')
-            
+
             return jsonify(book.to_dict()), 201
         except Exception as e:
             db.session.rollback()
@@ -572,6 +578,351 @@ def register_routes(app):
             })
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+
+    # CSV Import endpoint
+    @app.route('/api/books/import-csv', methods=['POST'])
+    @token_required
+    def import_books_from_csv(current_user):
+        try:
+            if 'file' not in request.files:
+                return jsonify({'error': 'No file uploaded'}), 400
+
+            file = request.files['file']
+            if file.filename == '':
+                return jsonify({'error': 'No file selected'}), 400
+
+            if not file.filename.lower().endswith('.csv'):
+                return jsonify({'error': 'File must be CSV format (.csv)'}), 400
+
+            # Read CSV file with UTF-8 encoding for international characters
+            try:
+                # Save uploaded file temporarily to read with proper encoding
+                import tempfile
+                import os
+                temp_path = None
+
+                with tempfile.NamedTemporaryFile(mode='wb', suffix='.csv', delete=False) as temp_file:
+                    file.save(temp_file.name)
+                    temp_path = temp_file.name
+
+                # Read CSV with UTF-8 encoding
+                df = pd.read_csv(temp_path, encoding='utf-8')
+
+                # Clean up temp file
+                if temp_path and os.path.exists(temp_path):
+                    os.unlink(temp_path)
+
+            except Exception as e:
+                # Try with different encodings if UTF-8 fails
+                try:
+                    if temp_path and os.path.exists(temp_path):
+                        df = pd.read_csv(temp_path, encoding='utf-8-sig')  # For files with BOM
+                        os.unlink(temp_path)
+                except Exception as e2:
+                    if temp_path and os.path.exists(temp_path):
+                        os.unlink(temp_path)
+                    return jsonify({'error': f'Error reading CSV file: {str(e)}. Please ensure file is saved with UTF-8 encoding.'}), 400
+
+            # Validate required columns
+            required_columns = ['Book Name', 'Author', 'Category']
+            missing_columns = [col for col in required_columns if col not in df.columns]
+            if missing_columns:
+                return jsonify({'error': f'Missing required columns: {missing_columns}'}), 400
+
+            imported_count = 0
+            errors = []
+
+            updated_count = 0
+
+            for index, row in df.iterrows():
+                try:
+                    # Skip empty rows (check first 3 required columns)
+                    if pd.isna(row['Book Name']) or pd.isna(row['Author']) or pd.isna(row['Category']):
+                        continue
+
+                    book_name = str(row['Book Name']).strip()
+                    author_name = str(row['Author']).strip()
+
+                    # Check if book already exists (by book name + author)
+                    existing_book = Book.query.filter_by(
+                        book_name=book_name,
+                        author=author_name
+                    ).first()
+
+                    # Get or create category
+                    category = Category.query.filter_by(name=str(row['Category']).strip()).first()
+                    if not category:
+                        category = Category(name=str(row['Category']).strip())
+                        db.session.add(category)
+                        db.session.flush()
+
+                    # Get or create publisher
+                    publisher = None
+                    if 'Publisher' in row and not pd.isna(row['Publisher']):
+                        publisher_name = str(row['Publisher']).strip()
+                        publisher = Publisher.query.filter_by(name=publisher_name).first()
+                        if not publisher:
+                            publisher = Publisher(name=publisher_name)
+                            db.session.add(publisher)
+                            db.session.flush()
+
+                    if existing_book:
+                        # UPDATE existing book with new/missing information
+                        existing_book.category_id = category.id
+                        existing_book.publisher_id = publisher.id if publisher else existing_book.publisher_id
+
+                        # Update fields only if new data is provided (not empty)
+                        if 'Editor' in row and not pd.isna(row['Editor']) and str(row['Editor']).strip():
+                            existing_book.editor = str(row['Editor']).strip()
+
+                        if 'Volumes' in row and not pd.isna(row['Volumes']):
+                            existing_book.volumes = int(row['Volumes'])
+
+                        if 'Year' in row and not pd.isna(row['Year']):
+                            existing_book.year = int(row['Year'])
+
+                        if 'Copies' in row and not pd.isna(row['Copies']):
+                            existing_book.copies = int(row['Copies'])
+
+                        if 'Status' in row and not pd.isna(row['Status']) and str(row['Status']).strip():
+                            existing_book.status = str(row['Status']).strip()
+
+                        if 'Completion Status' in row and not pd.isna(row['Completion Status']) and str(row['Completion Status']).strip():
+                            existing_book.completion_status = str(row['Completion Status']).strip()
+
+                        if 'Note' in row and not pd.isna(row['Note']) and str(row['Note']).strip():
+                            existing_book.note = str(row['Note']).strip()
+
+                        updated_count += 1
+                    else:
+                        # CREATE new book
+                        book = Book(
+                            book_name=book_name,
+                            author=author_name,
+                            category_id=category.id,
+                            editor=str(row['Editor']).strip() if 'Editor' in row and not pd.isna(row['Editor']) else None,
+                            volumes=int(row['Volumes']) if 'Volumes' in row and not pd.isna(row['Volumes']) else 1,
+                            publisher_id=publisher.id if publisher else None,
+                            year=int(row['Year']) if 'Year' in row and not pd.isna(row['Year']) else None,
+                            copies=int(row['Copies']) if 'Copies' in row and not pd.isna(row['Copies']) else 1,
+                            status=str(row['Status']).strip() if 'Status' in row and not pd.isna(row['Status']) else 'Available',
+                            completion_status=str(row['Completion Status']).strip() if 'Completion Status' in row and not pd.isna(row['Completion Status']) else None,
+                            note=str(row['Note']).strip() if 'Note' in row and not pd.isna(row['Note']) else None
+                        )
+
+                        db.session.add(book)
+                        imported_count += 1
+
+                except Exception as e:
+                    errors.append(f'Row {index + 2}: {str(e)}')
+
+            if imported_count > 0 or updated_count > 0:
+                db.session.commit()
+                if imported_count > 0:
+                    add_log_entry(f'{imported_count} books imported from CSV file', 'Import')
+                if updated_count > 0:
+                    add_log_entry(f'{updated_count} books updated from CSV file', 'Update')
+
+            response_data = {
+                'imported_count': imported_count,
+                'updated_count': updated_count,
+                'message': f'Successfully imported {imported_count} new books and updated {updated_count} existing books'
+            }
+
+            if errors:
+                response_data['errors'] = errors
+                response_data['message'] += f' with {len(errors)} errors'
+
+            return jsonify(response_data), 201
+
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': f'Import failed: {str(e)}'}), 500
+
+    # CSV Template download endpoint
+    @app.route('/api/books/csv-template', methods=['GET'])
+    def download_csv_template():
+        try:
+            from flask import send_file
+            import io
+
+            # Create template data with all 12 fields including multilingual examples
+            template_data = {
+                'Book Name': [
+                    'The Great Gatsby',
+                    'গ্রেট গ্যাটসবি',  # Bengali
+                    'الغَاتسبي العظيم'  # Arabic
+                ],
+                'Author': [
+                    'F. Scott Fitzgerald',
+                    'রবীন্দ্রনাথ ঠাকুর',  # Rabindranath Tagore in Bengali
+                    'نجيب محفوظ'  # Naguib Mahfouz in Arabic
+                ],
+                'Category': [
+                    'Fiction',
+                    'সাহিত্য',  # Literature in Bengali
+                    'أدب'  # Literature in Arabic
+                ],
+                'Editor': ['Maxwell Perkins', 'এডিটর নাম', 'اسم المحرر'],  # Editor names in different languages
+                'Volumes': [1, 2, 1],
+                'Publisher': [
+                    'Scribner',
+                    'বিশ্বভারতী',  # Visva-Bharati in Bengali
+                    'دار الشروق'  # Dar Al-Shorouk in Arabic
+                ],
+                'Year': [1925, 1913, 1956],
+                'Copies': [2, 1, 3],
+                'Status': ['Available', 'Available', 'Available'],
+                'Completion Status': ['Complete', 'Complete', 'Incomplete'],
+                'Note': [
+                    'Classic American novel',
+                    'নোবেল পুরস্কার বিজয়ী',  # Nobel Prize winner in Bengali
+                    'الرواية الكلاسيكية'  # Classic novel in Arabic
+                ]
+            }
+
+            df = pd.DataFrame(template_data)
+
+            # Create CSV file in memory with UTF-8 encoding
+            output = io.StringIO()
+            df.to_csv(output, index=False, encoding='utf-8')
+
+            # Convert to BytesIO with UTF-8 encoding
+            csv_bytes = io.BytesIO()
+            csv_bytes.write(output.getvalue().encode('utf-8'))
+            csv_bytes.seek(0)
+
+            return send_file(
+                csv_bytes,
+                as_attachment=True,
+                download_name='book_import_template.csv',
+                mimetype='text/csv; charset=utf-8'
+            )
+
+        except Exception as e:
+            return jsonify({'error': f'Error creating template: {str(e)}'}), 500
+
+    # CSV Template info endpoint (for showing format info)
+    @app.route('/api/books/csv-template-info', methods=['GET'])
+    def get_csv_template_info():
+        try:
+            return jsonify({
+                'message': 'CSV template format information',
+                'file_format': 'CSV (.csv)',
+                'encoding': 'UTF-8 (supports Arabic, Bengali, and other languages)',
+                'required_columns': ['Book Name', 'Author', 'Category'],
+                'optional_columns': ['Editor', 'Volumes', 'Publisher', 'Year', 'Copies', 'Status', 'Completion Status', 'Note'],
+                'instructions': [
+                    '1. Library ID: Auto-generated (do not include in CSV)',
+                    '2. Book Name: The title of the book (Required) - Supports Arabic, Bengali, etc.',
+                    '3. Author: The author name (Required) - Supports Arabic, Bengali, etc.',
+                    '4. Category: Book category like Fiction, Science, etc. (Required)',
+                    '5. Editor: Editor name (Optional)',
+                    '6. Volumes: Number of volumes/parts (Optional, defaults to 1)',
+                    '7. Publisher: Name of the publisher (Optional)',
+                    '8. Year: Publication year as number (Optional)',
+                    '9. Copies: Number of copies available (Optional, defaults to 1)',
+                    '10. Status: Available, Issued, or Maintenance (Optional, defaults to Available)',
+                    '11. Completion Status: Complete, Incomplete, In Progress, or Missing Pages (Optional)',
+                    '12. Note: Any special notes about the book (Optional)'
+                ],
+                'multilingual_support': [
+                    'CSV files support UTF-8 encoding',
+                    'Perfect for Arabic text: كتاب، مؤلف، فئة',
+                    'Perfect for Bengali text: বই, লেখক, বিভাগ',
+                    'Save your CSV with UTF-8 encoding for best results'
+                ]
+            })
+        except Exception as e:
+            return jsonify({'error': f'Error getting template info: {str(e)}'}), 500
+
+    # Export books to CSV endpoint
+    @app.route('/api/books/export-csv', methods=['GET'])
+    def export_books_to_csv():
+        try:
+            from flask import send_file
+            import io
+
+            # Get all books
+            books = Book.query.all()
+
+            # Create CSV data with exact same structure as import template
+            csv_data = {
+                'Book Name': [book.book_name for book in books],
+                'Author': [book.author for book in books],
+                'Category': [book.category.name if book.category else '' for book in books],
+                'Editor': [book.editor or '' for book in books],
+                'Volumes': [book.volumes or 1 for book in books],
+                'Publisher': [book.publisher.name if book.publisher else '' for book in books],
+                'Year': [book.year or '' for book in books],
+                'Copies': [book.copies or 1 for book in books],
+                'Status': [book.status or 'Available' for book in books],
+                'Completion Status': [book.completion_status or '' for book in books],
+                'Note': [book.note or '' for book in books]
+            }
+
+            df = pd.DataFrame(csv_data)
+
+            # Create CSV file in memory with UTF-8 encoding
+            output = io.StringIO()
+            df.to_csv(output, index=False, encoding='utf-8')
+
+            # Convert StringIO to BytesIO with UTF-8 encoding
+            csv_bytes = io.BytesIO()
+            csv_bytes.write(output.getvalue().encode('utf-8'))
+            csv_bytes.seek(0)
+
+            return send_file(
+                csv_bytes,
+                as_attachment=True,
+                download_name='library_books_export.csv',
+                mimetype='text/csv; charset=utf-8'
+            )
+
+        except Exception as e:
+            return jsonify({'error': f'Error exporting books: {str(e)}'}), 500
+
+    # Bulk delete books endpoint
+    @app.route('/api/books/bulk-delete', methods=['POST'])
+    @token_required
+    def bulk_delete_books(current_user):
+        try:
+            data = request.get_json()
+            book_ids = data.get('book_ids', [])
+
+            if not book_ids:
+                return jsonify({'error': 'No book IDs provided'}), 400
+
+            # Get books to be deleted for logging
+            books_to_delete = Book.query.filter(Book.id.in_(book_ids)).all()
+            deleted_count = len(books_to_delete)
+
+            if deleted_count == 0:
+                return jsonify({'error': 'No books found with provided IDs'}), 404
+
+            # Collect book names BEFORE deletion for logging
+            book_names = [book.book_name for book in books_to_delete]
+
+            # Delete all related issue history records first
+            from sqlalchemy import text
+            db.session.execute(text('DELETE FROM issue_history WHERE book_id IN :book_ids'), {'book_ids': tuple(book_ids)})
+
+            # Delete the books
+            Book.query.filter(Book.id.in_(book_ids)).delete(synchronize_session=False)
+
+            db.session.commit()
+
+            # Log the bulk deletion
+            add_log_entry(f'Bulk deleted {deleted_count} books: {", ".join(book_names[:5])}{"..." if len(book_names) > 5 else ""}', 'Delete')
+
+            return jsonify({
+                'message': f'Successfully deleted {deleted_count} books',
+                'deleted_count': deleted_count
+            }), 200
+
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': f'Bulk delete failed: {str(e)}'}), 500
 
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])

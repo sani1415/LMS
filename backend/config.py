@@ -23,7 +23,8 @@ class DevelopmentMySQLConfig(Config):
     """Development configuration with MySQL for local testing"""
     DEBUG = True
     # MySQL configuration for local development
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root:@localhost/library'
+    # Try different connection methods
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root@localhost/library_lms'
 
 class ProductionConfig(Config):
     """Production configuration for cPanel deployment"""
