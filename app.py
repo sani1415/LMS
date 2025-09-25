@@ -2,6 +2,7 @@
 # PASTE THIS ENTIRE CODE INTO: app.py
 #
 import os
+import pymysql
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from backend.config import config
@@ -26,6 +27,48 @@ db.init_app(app)
 bcrypt.init_app(app)
 migrate = Migrate(app, db)  # Initialize Flask-Migrate
 CORS(app)  # Enable CORS for frontend integration
+
+def ensure_database_exists():
+    """Create database if it doesn't exist"""
+    try:
+        if config_name == 'development_mysql':
+            # Local development - connect without specifying database
+            connection = pymysql.connect(
+                host='localhost',
+                user='root',
+                charset='utf8mb4'
+            )
+            cursor = connection.cursor()
+            cursor.execute("CREATE DATABASE IF NOT EXISTS library CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+            connection.commit()
+            print("Local database 'library' ensured to exist")
+
+        elif config_name == 'production':
+            # Production cPanel - database should already exist, just verify connection
+            db_user = os.environ.get('DB_USER')
+            db_password = os.environ.get('DB_PASSWORD')
+            db_host = os.environ.get('DB_HOST')
+            db_name = os.environ.get('DB_NAME')
+
+            if not all([db_user, db_password, db_host, db_name]):
+                raise ValueError("Production requires DB_USER, DB_PASSWORD, DB_HOST, DB_NAME environment variables")
+
+            # Test connection to verify database exists
+            connection = pymysql.connect(
+                host=db_host,
+                user=db_user,
+                password=db_password,
+                database=db_name,
+                charset='utf8mb4'
+            )
+            print(f"Production database '{db_name}' connection verified")
+
+        cursor.close()
+        connection.close()
+
+    except Exception as e:
+        print(f"Error with database: {e}")
+        # Don't raise exception - let the app continue and let SQLAlchemy handle it
 
 # Import and register routes after app and db are initialized to avoid circular imports
 from backend.routes import register_routes
@@ -172,20 +215,41 @@ def create_sample_data():
         print(f"Error creating sample data: {e}")
         db.session.rollback()
 
-if __name__ == '__main__':
-    # This block runs only when you execute "python app.py" locally
-    with app.app_context():
-        # Run database migrations automatically
-        from flask_migrate import upgrade
-        upgrade()  # This will run any pending migrations
+def initialize_database():
+    """Initialize database for both development and production"""
+    # Ensure database exists/is accessible
+    ensure_database_exists()
 
-        # Create admin user first
+    with app.app_context():
+        if config_name == 'production':
+            # Production: Use Flask-Migrate for proper schema management
+            try:
+                from flask_migrate import upgrade
+                upgrade()  # Run any pending migrations
+                print("Database migrated successfully using Flask-Migrate")
+            except Exception as e:
+                print(f"Migration error: {e}")
+                # Fallback to create_all if migrations fail
+                db.create_all()
+                print("Fallback: Database tables created with db.create_all()")
+        else:
+            # Development: Use simple db.create_all()
+            db.create_all()
+            print("Development: Database tables created with db.create_all()")
+
+        # Create admin user
         create_admin_user()
 
-        # Add sample data if the database is empty
-        if not Book.query.first():
+        # Add sample data only for development
+        if config_name == 'development_mysql' and not Book.query.first():
             print("Database is empty, creating sample data...")
             create_sample_data()
             print("Sample data created.")
 
+if __name__ == '__main__':
+    # This block runs only when you execute "python app.py" locally
+    initialize_database()
     app.run(debug=False, host='0.0.0.0', port=5001)
+else:
+    # This runs when deployed (like in cPanel)
+    initialize_database()
