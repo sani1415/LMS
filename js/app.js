@@ -588,7 +588,7 @@ class LibraryManagementSystem {
 
     async issueBook(bookId) {
         console.log('issueBook called with bookId:', bookId);
-        const book = this.books.find(b => b.id === bookId);
+        const book = this.books.find(b => (b.library_id || b.id) === bookId);
         console.log('Found book:', book);
         if (!book) {
             console.error('Book not found with ID:', bookId);
@@ -645,9 +645,9 @@ class LibraryManagementSystem {
                 console.log('All fields validated, sending API request...');
                 try {
                     // Send to API
-                    const response = await this.apiCall(`/books/${bookId}/issue`, {
-                        method: 'POST',
-                        body: JSON.stringify({
+                    const response =                 await this.apiCall(`/books/${book.library_id || book.id}/issue`, {
+                    method: 'POST',
+                    body: JSON.stringify({
                             memberName: member,
                             issueDate: issueDate,
                             returnDate: returnDate
@@ -674,7 +674,7 @@ class LibraryManagementSystem {
     }
 
     returnBook(bookId) {
-        const book = this.books.find(b => b.id === bookId);
+        const book = this.books.find(b => (b.library_id || b.id) === bookId);
         const issueRecord = this.issueHistory.find(ih => ih.bookName === book.bookName && ih.status === 'Pending');
         
         if (!book || !issueRecord) return;
@@ -696,7 +696,7 @@ class LibraryManagementSystem {
                 console.log(`Actual Return Date: ${actualReturnDate}`);
                 try {
                     // Send to API
-                    const response = await this.apiCall(`/books/${bookId}/return`, {
+                    const response = await this.apiCall(`/books/${book.library_id || book.id}/return`, {
                         method: 'POST',
                         body: JSON.stringify({
                             actualReturnDate: actualReturnDate
@@ -723,7 +723,7 @@ class LibraryManagementSystem {
     }
 
     editBook(bookId) {
-        const book = this.books.find(b => b.id === bookId);
+        const book = this.books.find(b => (b.library_id || b.id) === bookId);
         if (!book) return;
 
         this.showModal('Edit Book', `
@@ -772,7 +772,7 @@ class LibraryManagementSystem {
             };
 
             try {
-                await this.apiCall(`/books/${book.id}`, {
+                await this.apiCall(`/books/${book.library_id || book.id}`, {
                     method: 'PUT',
                     body: JSON.stringify(updatedBookData)
                 });
@@ -788,7 +788,7 @@ class LibraryManagementSystem {
     }
 
     async deleteBook(bookId) {
-        const book = this.books.find(b => b.id === bookId);
+        const book = this.books.find(b => (b.library_id || b.id) === bookId);
         if (!book) return;
 
         this.showConfirmModal(`Are you sure you want to delete "${book.bookName}"? This action cannot be undone.`, async () => {

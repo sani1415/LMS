@@ -173,6 +173,10 @@ def create_sample_data():
 if __name__ == '__main__':
     # This block runs only when you execute "python app.py" locally
     with app.app_context():
+        try:
+            db.drop_all()  # Drop all tables first for clean start
+        except:
+            pass  # Ignore errors if tables don't exist
         db.create_all()  # Create database tables
 
         # Create admin user first
@@ -184,4 +188,4 @@ if __name__ == '__main__':
             create_sample_data()
             print("Sample data created.")
 
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=False, host='0.0.0.0', port=5001)

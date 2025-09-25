@@ -23,8 +23,15 @@ class DevelopmentMySQLConfig(Config):
     """Development configuration with MySQL for local testing"""
     DEBUG = True
     # MySQL configuration for local development
-    # Try different connection methods
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root@localhost/library_lms'
+    # Using your existing 'library' database
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root@localhost/library'
+
+class DevelopmentSQLServerConfig(Config):
+    """Development configuration with SQL Server for local testing"""
+    DEBUG = True
+    # SQL Server configuration for local development
+    # Using your existing 'library' database
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mssql+pyodbc://@localhost/library?driver=SQL+Server&trusted_connection=yes'
 
 class ProductionConfig(Config):
     """Production configuration for cPanel deployment"""
@@ -54,6 +61,7 @@ class TestingConfig(Config):
 config = {
     'development': DevelopmentConfig,
     'development_mysql': DevelopmentMySQLConfig,
+    'development_sqlserver': DevelopmentSQLServerConfig,
     'production': ProductionConfig,
     'testing': TestingConfig,
     'default': DevelopmentConfig
