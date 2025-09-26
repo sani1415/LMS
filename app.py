@@ -17,19 +17,36 @@ import warnings
 warnings.filterwarnings('ignore', category=UserWarning)
 
 # Handle fileno operation issues in cPanel
-if hasattr(sys.stdout, 'fileno'):
-    try:
+try:
+    # Test if fileno operations work
+    if hasattr(sys.stdout, 'fileno'):
         sys.stdout.fileno()
-    except (AttributeError, io.UnsupportedOperation):
-        # Replace stdout with a dummy that doesn't support fileno
-        class DummyStdout:
-            def write(self, x): pass
-            def flush(self): pass
-        sys.stdout = DummyStdout()
+        sys.stderr.fileno()
+except (AttributeError, io.UnsupportedOperation, OSError):
+    # Replace stdout and stderr with safer versions
+    class SafeOutput:
+        def __init__(self, original):
+            self.original = original
+        def write(self, x):
+            try:
+                self.original.write(x)
+            except:
+                pass
+        def flush(self):
+            try:
+                self.original.flush()
+            except:
+                pass
+        def fileno(self):
+            raise io.UnsupportedOperation("fileno not supported")
+
+    sys.stdout = SafeOutput(sys.stdout)
+    sys.stderr = SafeOutput(sys.stderr)
 
 
 # Determine the config name from the environment variable
-config_name = os.environ.get('FLASK_ENV', 'development_mysql')
+# Use APP_ENV instead of deprecated FLASK_ENV
+config_name = os.environ.get('APP_ENV') or os.environ.get('FLASK_ENV', 'development_mysql')
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -53,9 +70,15 @@ def close_db_session(error):
         try:
             if error:
                 db.session.rollback()
-            db.session.remove()
         except Exception as e:
-            print(f"Session cleanup error: {e}")
+            # Ignore "Command Out of Sync" errors during cleanup
+            if "Command Out of Sync" not in str(e):
+                print(f"Session cleanup error: {e}")
+        finally:
+            try:
+                db.session.remove()
+            except:
+                pass  # Ignore errors during session removal
 
 @app.errorhandler(Exception)
 def handle_database_errors(error):
