@@ -2,6 +2,8 @@
 # PASTE THIS ENTIRE CODE INTO: app.py
 #
 import os
+import sys
+import io
 import pymysql
 from flask import Flask, send_from_directory
 from flask_cors import CORS
@@ -9,6 +11,21 @@ from backend.config import config
 from backend.extensions import db, bcrypt
 from backend.models import Book, User, Category, Publisher, Member # Import models
 from flask_migrate import Migrate
+
+# Suppress fileno errors in cPanel environment
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning)
+
+# Handle fileno operation issues in cPanel
+if hasattr(sys.stdout, 'fileno'):
+    try:
+        sys.stdout.fileno()
+    except (AttributeError, io.UnsupportedOperation):
+        # Replace stdout with a dummy that doesn't support fileno
+        class DummyStdout:
+            def write(self, x): pass
+            def flush(self): pass
+        sys.stdout = DummyStdout()
 
 
 # Determine the config name from the environment variable
