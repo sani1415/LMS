@@ -17,7 +17,7 @@ class DevelopmentConfig(Config):
     """Development configuration - MySQL for consistency"""
     DEBUG = True
     # MySQL configuration for local development - SAME AS PRODUCTION
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root@localhost/library'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root@localhost/library?charset=utf8mb4&collation=utf8mb4_unicode_ci'
     # Connection pool settings to handle connection drops
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_pre_ping': True,
@@ -40,7 +40,7 @@ class ProductionConfig(Config):
     # Construct the database URI - set to None if variables are missing
     # This prevents errors during class definition, error will only occur if this config is actually used
     if all([DB_USER, DB_PASSWORD, DB_HOST, DB_NAME]):
-        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}?charset=utf8mb4&connect_timeout=60&read_timeout=60&write_timeout=60&autocommit=true"
+        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}?charset=utf8mb4&collation=utf8mb4_unicode_ci&connect_timeout=60&read_timeout=60&write_timeout=60&autocommit=true"
     else:
         # Set to None - the application will check this and provide a clear error message
         SQLALCHEMY_DATABASE_URI = None

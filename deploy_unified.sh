@@ -22,6 +22,10 @@ if [ -d "/home" ] && [ -d "/home/idarahco" ]; then
     echo "📦 Installing dependencies..."
     pip install -r requirements.txt
     
+    # Fix database collation issues
+    echo "🔧 Fixing database collation issues..."
+    python fix_cpanel_collation.py
+    
     echo "✅ Dependencies installed successfully!"
     echo "🎉 cPanel deployment completed!"
     echo "Your app will automatically create database tables on startup!"

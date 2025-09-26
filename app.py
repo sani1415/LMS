@@ -128,6 +128,8 @@ def ensure_database_exists():
             )
             cursor = connection.cursor()
             cursor.execute("CREATE DATABASE IF NOT EXISTS library CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+            # Also set the current database to use utf8mb4
+            cursor.execute("ALTER DATABASE library CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
             connection.commit()
             print("Local database 'library' ensured to exist")
 
