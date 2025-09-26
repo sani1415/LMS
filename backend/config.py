@@ -25,6 +25,13 @@ class DevelopmentMySQLConfig(Config):
     # MySQL configuration for local development
     # Using your existing 'library' database
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root@localhost/library'
+    # Connection pool settings to handle connection drops
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_timeout': 20,
+        'max_overflow': 0
+    }
 
 class DevelopmentSQLServerConfig(Config):
     """Development configuration with SQL Server for local testing"""

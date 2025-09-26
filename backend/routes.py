@@ -591,8 +591,8 @@ def register_routes(app):
             if file.filename == '':
                 return jsonify({'error': 'No file selected'}), 400
 
-            if not file.filename.lower().endswith('.csv'):
-                return jsonify({'error': 'File must be CSV format (.csv)'}), 400
+            if not (file.filename.lower().endswith('.csv') or file.filename.lower().endswith('.xlsx')):
+                return jsonify({'error': 'File must be CSV (.csv) or Excel (.xlsx) format'}), 400
 
             # Read CSV file with UTF-8 encoding for international characters
             try:
@@ -601,16 +601,41 @@ def register_routes(app):
                 import os
                 temp_path = None
 
-                with tempfile.NamedTemporaryFile(mode='wb', suffix='.csv', delete=False) as temp_file:
+                # Determine file type and set appropriate suffix
+                if file.filename.lower().endswith('.xlsx'):
+                    suffix = '.xlsx'
+                else:
+                    suffix = '.csv'
+                
+                with tempfile.NamedTemporaryFile(mode='wb', suffix=suffix, delete=False) as temp_file:
                     file.save(temp_file.name)
                     temp_path = temp_file.name
 
-                # Read CSV with UTF-8 encoding using built-in csv module
-                import csv
+                # Read file based on type
                 csv_data = []
-                with open(temp_path, 'r', encoding='utf-8') as csvfile:
-                    reader = csv.DictReader(csvfile)
-                    csv_data = list(reader)
+                if file.filename.lower().endswith('.xlsx'):
+                    # Read Excel file
+                    try:
+                        import openpyxl
+                        workbook = openpyxl.load_workbook(temp_path)
+                        worksheet = workbook.active
+                        
+                        # Get headers from first row
+                        headers = [cell.value for cell in worksheet[1]]
+                        
+                        # Read data rows
+                        for row in worksheet.iter_rows(min_row=2, values_only=True):
+                            if any(cell is not None for cell in row):  # Skip empty rows
+                                row_dict = dict(zip(headers, row))
+                                csv_data.append(row_dict)
+                    except ImportError:
+                        return jsonify({'error': 'Excel support requires openpyxl. Please install it or use CSV format.'}), 400
+                else:
+                    # Read CSV with UTF-8 encoding using built-in csv module
+                    import csv
+                    with open(temp_path, 'r', encoding='utf-8') as csvfile:
+                        reader = csv.DictReader(csvfile)
+                        csv_data = list(reader)
 
                 # Clean up temp file
                 if temp_path and os.path.exists(temp_path):
@@ -620,9 +645,21 @@ def register_routes(app):
                 # Try with different encodings if UTF-8 fails
                 try:
                     if temp_path and os.path.exists(temp_path):
-                        with open(temp_path, 'r', encoding='utf-8-sig') as csvfile:
-                            reader = csv.DictReader(csvfile)
-                            csv_data = list(reader)
+                        if file.filename.lower().endswith('.xlsx'):
+                            # Try Excel with different encoding
+                            import openpyxl
+                            workbook = openpyxl.load_workbook(temp_path)
+                            worksheet = workbook.active
+                            headers = [cell.value for cell in worksheet[1]]
+                            for row in worksheet.iter_rows(min_row=2, values_only=True):
+                                if any(cell is not None for cell in row):
+                                    row_dict = dict(zip(headers, row))
+                                    csv_data.append(row_dict)
+                        else:
+                            # Try CSV with different encoding
+                            with open(temp_path, 'r', encoding='utf-8-sig') as csvfile:
+                                reader = csv.DictReader(csvfile)
+                                csv_data = list(reader)
                         os.unlink(temp_path)
                 except Exception as e2:
                     if temp_path and os.path.exists(temp_path):
