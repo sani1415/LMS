@@ -2,7 +2,7 @@ from flask import request, jsonify
 from .models import db, Book, Member, Category, Publisher, IssueHistory, LibraryLog
 from datetime import datetime, date
 import json
-import pandas as pd
+# import pandas as pd  # Commented out for cPanel compatibility
 import os
 from werkzeug.utils import secure_filename
 from sqlalchemy.exc import IntegrityError
@@ -605,8 +605,12 @@ def register_routes(app):
                     file.save(temp_file.name)
                     temp_path = temp_file.name
 
-                # Read CSV with UTF-8 encoding
-                df = pd.read_csv(temp_path, encoding='utf-8')
+                # Read CSV with UTF-8 encoding using built-in csv module
+                import csv
+                csv_data = []
+                with open(temp_path, 'r', encoding='utf-8') as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    csv_data = list(reader)
 
                 # Clean up temp file
                 if temp_path and os.path.exists(temp_path):
@@ -616,7 +620,9 @@ def register_routes(app):
                 # Try with different encodings if UTF-8 fails
                 try:
                     if temp_path and os.path.exists(temp_path):
-                        df = pd.read_csv(temp_path, encoding='utf-8-sig')  # For files with BOM
+                        with open(temp_path, 'r', encoding='utf-8-sig') as csvfile:
+                            reader = csv.DictReader(csvfile)
+                            csv_data = list(reader)
                         os.unlink(temp_path)
                 except Exception as e2:
                     if temp_path and os.path.exists(temp_path):
@@ -624,8 +630,11 @@ def register_routes(app):
                     return jsonify({'error': f'Error reading CSV file: {str(e)}. Please ensure file is saved with UTF-8 encoding.'}), 400
 
             # Validate required columns
+            if not csv_data:
+                return jsonify({'error': 'CSV file is empty or invalid'}), 400
+                
             required_columns = ['Book Name', 'Author', 'Category']
-            missing_columns = [col for col in required_columns if col not in df.columns]
+            missing_columns = [col for col in required_columns if col not in csv_data[0].keys()]
             if missing_columns:
                 return jsonify({'error': f'Missing required columns: {missing_columns}'}), 400
 
@@ -634,10 +643,10 @@ def register_routes(app):
 
             updated_count = 0
 
-            for index, row in df.iterrows():
+            for index, row in enumerate(csv_data):
                 try:
                     # Skip empty rows (check first 3 required columns)
-                    if pd.isna(row['Book Name']) or pd.isna(row['Author']) or pd.isna(row['Category']):
+                    if not row.get('Book Name', '').strip() or not row.get('Author', '').strip() or not row.get('Category', '').strip():
                         continue
 
                     book_name = str(row['Book Name']).strip()
@@ -658,7 +667,7 @@ def register_routes(app):
 
                     # Get or create publisher
                     publisher = None
-                    if 'Publisher' in row and not pd.isna(row['Publisher']):
+                    if row.get('Publisher', '').strip():
                         publisher_name = str(row['Publisher']).strip()
                         publisher = Publisher.query.filter_by(name=publisher_name).first()
                         if not publisher:
@@ -672,25 +681,34 @@ def register_routes(app):
                         existing_book.publisher_id = publisher.id if publisher else existing_book.publisher_id
 
                         # Update fields only if new data is provided (not empty)
-                        if 'Editor' in row and not pd.isna(row['Editor']) and str(row['Editor']).strip():
+                        if row.get('Editor', '').strip():
                             existing_book.editor = str(row['Editor']).strip()
 
-                        if 'Volumes' in row and not pd.isna(row['Volumes']):
-                            existing_book.volumes = int(row['Volumes'])
+                        if row.get('Volumes', '').strip():
+                            try:
+                                existing_book.volumes = int(row['Volumes'])
+                            except ValueError:
+                                pass
 
-                        if 'Year' in row and not pd.isna(row['Year']):
-                            existing_book.year = int(row['Year'])
+                        if row.get('Year', '').strip():
+                            try:
+                                existing_book.year = int(row['Year'])
+                            except ValueError:
+                                pass
 
-                        if 'Copies' in row and not pd.isna(row['Copies']):
-                            existing_book.copies = int(row['Copies'])
+                        if row.get('Copies', '').strip():
+                            try:
+                                existing_book.copies = int(row['Copies'])
+                            except ValueError:
+                                pass
 
-                        if 'Status' in row and not pd.isna(row['Status']) and str(row['Status']).strip():
+                        if row.get('Status', '').strip():
                             existing_book.status = str(row['Status']).strip()
 
-                        if 'Completion Status' in row and not pd.isna(row['Completion Status']) and str(row['Completion Status']).strip():
+                        if row.get('Completion Status', '').strip():
                             existing_book.completion_status = str(row['Completion Status']).strip()
 
-                        if 'Note' in row and not pd.isna(row['Note']) and str(row['Note']).strip():
+                        if row.get('Note', '').strip():
                             existing_book.note = str(row['Note']).strip()
 
                         updated_count += 1
@@ -700,14 +718,14 @@ def register_routes(app):
                             book_name=book_name,
                             author=author_name,
                             category_id=category.id,
-                            editor=str(row['Editor']).strip() if 'Editor' in row and not pd.isna(row['Editor']) else None,
-                            volumes=int(row['Volumes']) if 'Volumes' in row and not pd.isna(row['Volumes']) else 1,
+                            editor=str(row['Editor']).strip() if row.get('Editor', '').strip() else None,
+                            volumes=int(row['Volumes']) if row.get('Volumes', '').strip() else 1,
                             publisher_id=publisher.id if publisher else None,
-                            year=int(row['Year']) if 'Year' in row and not pd.isna(row['Year']) else None,
-                            copies=int(row['Copies']) if 'Copies' in row and not pd.isna(row['Copies']) else 1,
-                            status=str(row['Status']).strip() if 'Status' in row and not pd.isna(row['Status']) else 'Available',
-                            completion_status=str(row['Completion Status']).strip() if 'Completion Status' in row and not pd.isna(row['Completion Status']) else None,
-                            note=str(row['Note']).strip() if 'Note' in row and not pd.isna(row['Note']) else None
+                            year=int(row['Year']) if row.get('Year', '').strip() else None,
+                            copies=int(row['Copies']) if row.get('Copies', '').strip() else 1,
+                            status=str(row['Status']).strip() if row.get('Status', '').strip() else 'Available',
+                            completion_status=str(row['Completion Status']).strip() if row.get('Completion Status', '').strip() else None,
+                            note=str(row['Note']).strip() if row.get('Note', '').strip() else None
                         )
 
                         db.session.add(book)
@@ -781,11 +799,20 @@ def register_routes(app):
                 ]
             }
 
-            df = pd.DataFrame(template_data)
-
-            # Create CSV file in memory with UTF-8 encoding
+            # Create CSV file in memory with UTF-8 encoding using built-in csv module
+            import csv
             output = io.StringIO()
-            df.to_csv(output, index=False, encoding='utf-8')
+            writer = csv.writer(output)
+            
+            # Write header
+            headers = list(template_data.keys())
+            writer.writerow(headers)
+            
+            # Write data rows
+            num_rows = len(template_data[headers[0]])
+            for i in range(num_rows):
+                row = [template_data[header][i] for header in headers]
+                writer.writerow(row)
 
             # Convert to BytesIO with UTF-8 encoding
             csv_bytes = io.BytesIO()
@@ -842,30 +869,38 @@ def register_routes(app):
         try:
             from flask import send_file
             import io
+            import csv
 
             # Get all books
             books = Book.query.all()
 
-            # Create CSV data with exact same structure as import template
-            csv_data = {
-                'Book Name': [book.book_name for book in books],
-                'Author': [book.author for book in books],
-                'Category': [book.category.name if book.category else '' for book in books],
-                'Editor': [book.editor or '' for book in books],
-                'Volumes': [book.volumes or 1 for book in books],
-                'Publisher': [book.publisher.name if book.publisher else '' for book in books],
-                'Year': [book.year or '' for book in books],
-                'Copies': [book.copies or 1 for book in books],
-                'Status': [book.status or 'Available' for book in books],
-                'Completion Status': [book.completion_status or '' for book in books],
-                'Note': [book.note or '' for book in books]
-            }
-
-            df = pd.DataFrame(csv_data)
-
             # Create CSV file in memory with UTF-8 encoding
             output = io.StringIO()
-            df.to_csv(output, index=False, encoding='utf-8')
+            writer = csv.writer(output)
+
+            # Write CSV header
+            headers = [
+                'Book Name', 'Author', 'Category', 'Editor', 'Volumes', 
+                'Publisher', 'Year', 'Copies', 'Status', 'Completion Status', 'Note'
+            ]
+            writer.writerow(headers)
+
+            # Write book data
+            for book in books:
+                row = [
+                    book.book_name or '',
+                    book.author or '',
+                    book.category.name if book.category else '',
+                    book.editor or '',
+                    book.volumes or 1,
+                    book.publisher.name if book.publisher else '',
+                    book.year or '',
+                    book.copies or 1,
+                    book.status or 'Available',
+                    book.completion_status or '',
+                    book.note or ''
+                ]
+                writer.writerow(row)
 
             # Convert StringIO to BytesIO with UTF-8 encoding
             csv_bytes = io.BytesIO()
