@@ -530,18 +530,18 @@ class LibraryManagementSystem {
                 <td>
                     <div class="action-buttons">
                         ${book.status === 'Available' ?
-                            `<button class="btn btn-primary btn-sm" onclick="lms.issueBook(${book.library_id || book.id})">
-                                <i class="fas fa-share"></i> Issue
+                            `<button class="btn btn-primary btn-sm" onclick="lms.issueBook(${book.library_id || book.id})" title="Issue Book">
+                                <i class="fas fa-share"></i>
                             </button>` :
-                            `<button class="btn btn-secondary btn-sm" onclick="lms.returnBook(${book.library_id || book.id})">
-                                <i class="fas fa-undo"></i> Return
+                            `<button class="btn btn-secondary btn-sm" onclick="lms.returnBook(${book.library_id || book.id})" title="Return Book">
+                                <i class="fas fa-undo"></i>
                             </button>`
                         }
-                        <button class="btn btn-secondary btn-sm" onclick="lms.editBook(${book.library_id || book.id})">
-                            <i class="fas fa-edit"></i> Edit
+                        <button class="btn btn-secondary btn-sm" onclick="lms.editBook(${book.library_id || book.id})" title="Edit Book">
+                            <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-danger btn-sm" onclick="lms.deleteBook(${book.library_id || book.id})">
-                            <i class="fas fa-trash"></i> Delete
+                        <button class="btn btn-danger btn-sm" onclick="lms.deleteBook(${book.library_id || book.id})" title="Delete Book">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </td>
@@ -1096,12 +1096,14 @@ class LibraryManagementSystem {
                     <span class="status-badge ${record.status.toLowerCase()}">${record.status}</span>
                 </td>
                 <td>
-                    ${record.status === 'Pending' ? 
-                        `<button class="btn btn-secondary btn-sm" onclick="lms.returnBookFromHistory(${record.id})">
-                            <i class="fas fa-undo"></i> Return
-                        </button>` : 
-                        '<span class="text-muted">Returned</span>'
-                    }
+                    <div class="action-buttons">
+                        ${record.status === 'Pending' ?
+                            `<button class="btn btn-secondary btn-sm" onclick="lms.returnBookFromHistory(${record.id})" title="Return Book">
+                                <i class="fas fa-undo"></i>
+                            </button>` :
+                            '<span class="text-muted">Returned</span>'
+                        }
+                    </div>
                 </td>
             </tr>
         `).join('');
@@ -1248,11 +1250,11 @@ class LibraryManagementSystem {
                 <input type="checkbox" class="member-select" data-member-id="${member.id}" style="margin-right: 10px;">
                 <span class="item-name">${member.name}</span>
                 <div class="action-buttons">
-                    <button class="btn btn-secondary btn-sm" onclick="lms.editMember('${member.name}')">
-                        <i class="fas fa-edit"></i> Edit
+                    <button class="btn btn-secondary btn-sm" onclick="lms.editMember('${member.name}')" title="Edit Member">
+                        <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="lms.deleteMember('${member.name}')">
-                        <i class="fas fa-trash"></i> Delete
+                    <button class="btn btn-danger btn-sm" onclick="lms.deleteMember('${member.name}')" title="Delete Member">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
@@ -1347,11 +1349,11 @@ class LibraryManagementSystem {
                 <input type="checkbox" class="category-select" data-category-id="${category.id}" style="margin-right: 10px;">
                 <span class="item-name">${category.name}</span>
                 <div class="action-buttons">
-                    <button class="btn btn-secondary btn-sm" onclick="lms.editCategory('${category.name}')">
-                        <i class="fas fa-edit"></i> Edit
+                    <button class="btn btn-secondary btn-sm" onclick="lms.editCategory('${category.name}')" title="Edit Category">
+                        <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="lms.deleteCategory('${category.name}')">
-                        <i class="fas fa-trash"></i> Delete
+                    <button class="btn btn-danger btn-sm" onclick="lms.deleteCategory('${category.name}')" title="Delete Category">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
@@ -1465,11 +1467,11 @@ class LibraryManagementSystem {
                 <input type="checkbox" class="publisher-select" data-publisher-id="${publisher.id}" style="margin-right: 10px;">
                 <span class="item-name">${publisher.name}</span>
                 <div class="action-buttons">
-                    <button class="btn btn-secondary btn-sm" onclick="lms.editPublisher('${publisher.name}')">
-                        <i class="fas fa-edit"></i> Edit
+                    <button class="btn btn-secondary btn-sm" onclick="lms.editPublisher('${publisher.name}')" title="Edit Publisher">
+                        <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="lms.deletePublisher('${publisher.name}')">
-                        <i class="fas fa-trash"></i> Delete
+                    <button class="btn btn-danger btn-sm" onclick="lms.deletePublisher('${publisher.name}')" title="Delete Publisher">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
