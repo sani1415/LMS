@@ -13,9 +13,9 @@ pip install -r requirements.txt
 
 echo "✅ Dependencies installed successfully!"
 
-# Fix database schema
-echo "🗄️ Fixing database schema..."
-python fix_cpanel_database.py
+# Reset database completely (removes Flask-Migrate tables and creates proper ones)
+echo "🗄️ Resetting database schema..."
+python reset_cpanel_database.py
 
 echo "🎉 Deployment completed successfully!"
 echo "Your LMS application should now be running on cPanel!"

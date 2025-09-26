@@ -312,39 +312,18 @@ def initialize_database():
     ensure_database_exists()
 
     with app.app_context():
-        if config_name == 'production':
-            # Production: Use Flask-Migrate for proper schema management
-            try:
-                from flask_migrate import upgrade
-                upgrade()  # Run any pending migrations
-                print("Database migrated successfully using Flask-Migrate")
-            except Exception as e:
-                print(f"Migration error: {e}")
-                # Fallback to create_all if migrations fail
-                db.create_all()
-                print("Fallback: Database tables created with db.create_all()")
-        else:
-            # Development: Use simple db.create_all()
-            db.create_all()
-            print("Development: Database tables created with db.create_all()")
+        # Both development and production: Use simple db.create_all()
+        db.create_all()
+        print("Database tables created with db.create_all()")
 
         # Create admin user
         create_admin_user()
 
-        # Add sample data only for development
-        if config_name == 'development_mysql' and not Book.query.first():
+        # Add sample data for both development and production (if database is empty)
+        if not Book.query.first():
             print("Database is empty, creating sample data...")
             create_sample_data()
             print("Sample data created.")
-
-        # Create initialization marker for production to prevent re-runs
-        if config_name == 'production':
-            try:
-                db.session.execute(db.text("CREATE TABLE IF NOT EXISTS initialization_marker (id INT PRIMARY KEY DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"))
-                db.session.execute(db.text("INSERT IGNORE INTO initialization_marker (id) VALUES (1)"))
-                db.session.commit()
-            except:
-                pass
 
     print("Database initialization completed")
 

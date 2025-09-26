@@ -71,10 +71,41 @@ def fix_all_tables():
     with app.app_context():
         try:
             print("Creating all tables...")
+            
+            # Drop existing alembic_version table if it exists (we don't need Flask-Migrate)
+            try:
+                db.engine.execute(text("DROP TABLE IF EXISTS alembic_version"))
+                print("✅ Removed alembic_version table")
+            except:
+                pass
+                
+            # Drop initialization_marker table if it exists
+            try:
+                db.engine.execute(text("DROP TABLE IF EXISTS initialization_marker"))
+                print("✅ Removed initialization_marker table")
+            except:
+                pass
+            
+            # Create all application tables
             db.create_all()
-            print("✅ All tables created/updated")
+            print("✅ All application tables created/updated")
+            
+            # Verify tables were created
+            inspector = inspect(db.engine)
+            tables = inspector.get_table_names()
+            expected_tables = ['user', 'book', 'member', 'category', 'publisher', 'issue_history', 'library_log']
+            
+            print("\n📋 Created tables:")
+            for table in expected_tables:
+                if table in tables:
+                    print(f"  ✅ {table}")
+                else:
+                    print(f"  ❌ {table} - MISSING!")
+                    
         except Exception as e:
             print(f"❌ Error creating tables: {e}")
+            import traceback
+            traceback.print_exc()
 
 def create_admin_user():
     """Create admin user if it doesn't exist"""
