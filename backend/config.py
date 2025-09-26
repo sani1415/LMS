@@ -14,16 +14,9 @@ class Config:
     HISTORY_PER_PAGE = 100
 
 class DevelopmentConfig(Config):
-    """Development configuration for local testing"""
+    """Development configuration - MySQL for consistency"""
     DEBUG = True
-    # Using SQLite for simple local development to avoid database setup.
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///library_dev.db'
-
-class DevelopmentMySQLConfig(Config):
-    """Development configuration with MySQL for local testing"""
-    DEBUG = True
-    # MySQL configuration for local development
-    # Using your existing 'library' database
+    # MySQL configuration for local development - SAME AS PRODUCTION
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root@localhost/library'
     # Connection pool settings to handle connection drops
     SQLALCHEMY_ENGINE_OPTIONS = {
@@ -32,13 +25,6 @@ class DevelopmentMySQLConfig(Config):
         'pool_timeout': 20,
         'max_overflow': 0
     }
-
-class DevelopmentSQLServerConfig(Config):
-    """Development configuration with SQL Server for local testing"""
-    DEBUG = True
-    # SQL Server configuration for local development
-    # Using your existing 'library' database
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mssql+pyodbc://@localhost/library?driver=SQL+Server&trusted_connection=yes'
 
 class ProductionConfig(Config):
     """Production configuration for cPanel deployment"""
@@ -76,8 +62,8 @@ class TestingConfig(Config):
 # Configuration dictionary that the application will use
 config = {
     'development': DevelopmentConfig,
-    'development_mysql': DevelopmentMySQLConfig,
-    'development_sqlserver': DevelopmentSQLServerConfig,
+    'development_mysql': DevelopmentConfig,  # Same as development
+    'development_sqlserver': DevelopmentConfig,  # Same as development
     'production': ProductionConfig,
     'testing': TestingConfig,
     'default': DevelopmentConfig

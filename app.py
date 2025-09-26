@@ -10,7 +10,6 @@ from flask_cors import CORS
 from backend.config import config
 from backend.extensions import db, bcrypt
 from backend.models import Book, User, Category, Publisher, Member # Import models
-from flask_migrate import Migrate
 
 # Suppress fileno errors in cPanel environment
 import warnings
@@ -46,7 +45,7 @@ except (AttributeError, io.UnsupportedOperation, OSError):
 
 # Determine the config name from the environment variable
 # Use APP_ENV instead of deprecated FLASK_ENV
-config_name = os.environ.get('APP_ENV') or os.environ.get('FLASK_ENV', 'development_mysql')
+config_name = os.environ.get('APP_ENV') or os.environ.get('FLASK_ENV', 'development')
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -59,7 +58,6 @@ if config_name == 'production' and app.config.get('SQLALCHEMY_DATABASE_URI') is 
 # Initialize extensions with the app
 db.init_app(app)
 bcrypt.init_app(app)
-migrate = Migrate(app, db)  # Initialize Flask-Migrate
 CORS(app)  # Enable CORS for frontend integration
 
 # Add error handlers for database issues
@@ -98,23 +96,11 @@ def handle_database_errors(error):
     raise error
 
 def ensure_database_exists():
-    """Create database if it doesn't exist"""
+    """Create database if it doesn't exist - UNIFIED for all environments"""
     connection = None
     cursor = None
     try:
-        if config_name == 'development_mysql':
-            # Local development - connect without specifying database
-            connection = pymysql.connect(
-                host='localhost',
-                user='root',
-                charset='utf8mb4'
-            )
-            cursor = connection.cursor()
-            cursor.execute("CREATE DATABASE IF NOT EXISTS library CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
-            connection.commit()
-            print("Local database 'library' ensured to exist")
-
-        elif config_name == 'production':
+        if config_name == 'production':
             # Production cPanel - database should already exist, just verify connection
             db_user = os.environ.get('DB_USER')
             db_password = os.environ.get('DB_PASSWORD')
@@ -133,6 +119,17 @@ def ensure_database_exists():
                 charset='utf8mb4'
             )
             print(f"Production database '{db_name}' connection verified")
+        else:
+            # Development - connect without specifying database
+            connection = pymysql.connect(
+                host='localhost',
+                user='root',
+                charset='utf8mb4'
+            )
+            cursor = connection.cursor()
+            cursor.execute("CREATE DATABASE IF NOT EXISTS library CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+            connection.commit()
+            print("Local database 'library' ensured to exist")
 
     except Exception as e:
         print(f"Error with database: {e}")
@@ -296,30 +293,19 @@ def create_sample_data():
         db.session.rollback()
 
 def initialize_database():
-    """Initialize database for both development and production"""
-    # Use database marker instead of global flag to persist across restarts
-    try:
-        with app.app_context():
-            # Check if initialization marker exists in database
-            result = db.session.execute(db.text("SELECT 1 FROM information_schema.tables WHERE table_name = 'initialization_marker'"))
-            if result.fetchone() and config_name == 'production':
-                print("Database already initialized (marker found), skipping...")
-                return
-    except:
-        pass  # Database might not be ready yet
-
+    """Initialize database - UNIFIED for all environments"""
     # Ensure database exists/is accessible
     ensure_database_exists()
 
     with app.app_context():
-        # Both development and production: Use simple db.create_all()
+        # Create all tables - works everywhere
         db.create_all()
         print("Database tables created with db.create_all()")
 
         # Create admin user
         create_admin_user()
 
-        # Add sample data for both development and production (if database is empty)
+        # Add sample data if database is empty
         if not Book.query.first():
             print("Database is empty, creating sample data...")
             create_sample_data()

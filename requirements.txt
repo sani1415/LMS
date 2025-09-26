@@ -1,7 +1,6 @@
 Flask==2.2.5
 Flask-SQLAlchemy==3.0.5
 Flask-CORS==4.0.0
-# Flask-Migrate==4.0.5  # Not needed - using db.create_all() instead
 Werkzeug==2.2.3
 SQLAlchemy==2.0.21
 python-dateutil==2.8.2
@@ -9,6 +8,4 @@ requests==2.31.0
 Flask-Bcrypt==1.0.1
 PyJWT==2.8.0
 PyMySQL==1.1.0
-pyodbc==4.0.39
-# CSV handling dependencies
 openpyxl==3.1.2
