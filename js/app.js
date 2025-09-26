@@ -347,12 +347,12 @@ class LibraryManagementSystem {
     }
 
     // Loading Indicator
-    showLoading() {
+    showLoading(message = 'Loading...') {
         // Create loading indicator if it doesn't exist
         if (!document.getElementById('loading-indicator')) {
             const loading = document.createElement('div');
             loading.id = 'loading-indicator';
-            loading.innerHTML = '<div class="loading-spinner"></div><p>Loading...</p>';
+            loading.innerHTML = `<div class="loading-spinner"></div><p>${message}</p>`;
             loading.style.cssText = `
                 position: fixed;
                 top: 50%;
@@ -366,14 +366,17 @@ class LibraryManagementSystem {
                 text-align: center;
             `;
             document.body.appendChild(loading);
+        } else {
+            // Update existing loading message
+            const loading = document.getElementById('loading-indicator');
+            loading.querySelector('p').textContent = message;
         }
-        document.getElementById('loading-indicator').style.display = 'block';
     }
 
     hideLoading() {
         const loading = document.getElementById('loading-indicator');
         if (loading) {
-            loading.style.display = 'none';
+            loading.remove();
         }
     }
 
@@ -1474,7 +1477,7 @@ class LibraryManagementSystem {
     async exportToCSV() {
         try {
             // Show loading message
-            this.showError('Exporting books to CSV...', false);
+            this.showLoading('Exporting books to CSV...');
 
             // Download CSV file from server with UTF-8 support
             const response = await fetch(`${this.apiBaseUrl}/books/export-csv`, {
@@ -1482,6 +1485,9 @@ class LibraryManagementSystem {
                     'x-access-token': this.token
                 }
             });
+
+            // Hide loading message
+            this.hideLoading();
 
             if (response.ok) {
                 const blob = await response.blob();
@@ -1503,6 +1509,8 @@ class LibraryManagementSystem {
             }
 
         } catch (error) {
+            // Hide loading message on error
+            this.hideLoading();
             console.error('Export error:', error);
             alert('Error exporting books: ' + error.message);
         }
