@@ -1528,7 +1528,7 @@ class LibraryManagementSystem {
     importFromCSV() {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.csv';
+        input.accept = '.csv,.xlsx';
         input.onchange = async (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -1541,8 +1541,8 @@ class LibraryManagementSystem {
     async processCSVImport(file) {
         try {
             // Validate file type
-            if (!file.name.toLowerCase().endsWith('.csv')) {
-                alert('Please select a CSV file (.csv)\nCSV format supports Arabic, Bengali, and other languages with UTF-8 encoding.');
+            if (!file.name.toLowerCase().endsWith('.csv') && !file.name.toLowerCase().endsWith('.xlsx')) {
+                alert('Please select a CSV (.csv) or Excel (.xlsx) file\nBoth formats support Arabic, Bengali, and other languages with UTF-8 encoding.');
                 return;
             }
 
@@ -1551,7 +1551,7 @@ class LibraryManagementSystem {
             formData.append('file', file);
 
             // Show loading message
-            this.showError('Importing books from CSV file with UTF-8 encoding...', false);
+            this.showLoading('Importing books from CSV file with UTF-8 encoding...');
 
             // Upload file to server
             const response = await fetch(`${this.apiBaseUrl}/books/import-csv`, {
@@ -1565,7 +1565,9 @@ class LibraryManagementSystem {
             const result = await response.json();
 
             if (response.ok) {
-                // Success
+                // Success - hide loading message
+                this.hideLoading();
+                
                 let message = result.message;
                 if (result.updated_count > 0) {
                     message += `\n\n✅ Smart Update: ${result.updated_count} existing books were updated with new information instead of creating duplicates!`;
@@ -1582,11 +1584,14 @@ class LibraryManagementSystem {
                 this.renderBooksTable();
 
             } else {
-                // Error
+                // Error - hide loading message
+                this.hideLoading();
                 alert('Import failed: ' + result.error);
             }
 
         } catch (error) {
+            // Hide loading message on error
+            this.hideLoading();
             console.error('CSV import error:', error);
             alert('Error importing CSV file: ' + error.message);
         }
