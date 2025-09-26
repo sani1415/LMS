@@ -681,51 +681,80 @@ def register_routes(app):
                         existing_book.publisher_id = publisher.id if publisher else existing_book.publisher_id
 
                         # Update fields only if new data is provided (not empty)
-                        if row.get('Editor', '').strip():
-                            existing_book.editor = str(row['Editor']).strip()
-
-                        if row.get('Volumes', '').strip():
+                        def safe_int(value, default=None):
+                            """Safely convert value to int"""
+                            if not value or str(value).strip() in ['', '**', '-', 'N/A']:
+                                return default
                             try:
-                                existing_book.volumes = int(row['Volumes'])
-                            except ValueError:
-                                pass
+                                return int(str(value).strip())
+                            except (ValueError, TypeError):
+                                return default
+                        
+                        def safe_str(value, default=None):
+                            """Safely convert value to string"""
+                            if not value or str(value).strip() in ['', '**', '-', 'N/A']:
+                                return default
+                            return str(value).strip()
+                        
+                        # Update fields with safe handling
+                        editor_val = safe_str(row.get('Editor'))
+                        if editor_val:
+                            existing_book.editor = editor_val
 
-                        if row.get('Year', '').strip():
-                            try:
-                                existing_book.year = int(row['Year'])
-                            except ValueError:
-                                pass
+                        volumes_val = safe_int(row.get('Volumes'))
+                        if volumes_val:
+                            existing_book.volumes = volumes_val
 
-                        if row.get('Copies', '').strip():
-                            try:
-                                existing_book.copies = int(row['Copies'])
-                            except ValueError:
-                                pass
+                        year_val = safe_int(row.get('Year'))
+                        if year_val:
+                            existing_book.year = year_val
 
-                        if row.get('Status', '').strip():
-                            existing_book.status = str(row['Status']).strip()
+                        copies_val = safe_int(row.get('Copies'))
+                        if copies_val:
+                            existing_book.copies = copies_val
 
-                        if row.get('Completion Status', '').strip():
-                            existing_book.completion_status = str(row['Completion Status']).strip()
+                        status_val = safe_str(row.get('Status'))
+                        if status_val:
+                            existing_book.status = status_val
 
-                        if row.get('Note', '').strip():
-                            existing_book.note = str(row['Note']).strip()
+                        completion_val = safe_str(row.get('Completion Status'))
+                        if completion_val:
+                            existing_book.completion_status = completion_val
+
+                        note_val = safe_str(row.get('Note'))
+                        if note_val:
+                            existing_book.note = note_val
 
                         updated_count += 1
                     else:
-                        # CREATE new book
+                        # CREATE new book with safe data handling
+                        def safe_int(value, default=None):
+                            """Safely convert value to int"""
+                            if not value or str(value).strip() in ['', '**', '-', 'N/A']:
+                                return default
+                            try:
+                                return int(str(value).strip())
+                            except (ValueError, TypeError):
+                                return default
+                        
+                        def safe_str(value, default=None):
+                            """Safely convert value to string"""
+                            if not value or str(value).strip() in ['', '**', '-', 'N/A']:
+                                return default
+                            return str(value).strip()
+                        
                         book = Book(
                             book_name=book_name,
                             author=author_name,
                             category_id=category.id,
-                            editor=str(row['Editor']).strip() if row.get('Editor', '').strip() else None,
-                            volumes=int(row['Volumes']) if row.get('Volumes', '').strip() else 1,
+                            editor=safe_str(row.get('Editor')),
+                            volumes=safe_int(row.get('Volumes'), 1),
                             publisher_id=publisher.id if publisher else None,
-                            year=int(row['Year']) if row.get('Year', '').strip() else None,
-                            copies=int(row['Copies']) if row.get('Copies', '').strip() else 1,
-                            status=str(row['Status']).strip() if row.get('Status', '').strip() else 'Available',
-                            completion_status=str(row['Completion Status']).strip() if row.get('Completion Status', '').strip() else None,
-                            note=str(row['Note']).strip() if row.get('Note', '').strip() else None
+                            year=safe_int(row.get('Year')),
+                            copies=safe_int(row.get('Copies'), 1),
+                            status=safe_str(row.get('Status'), 'Available'),
+                            completion_status=safe_str(row.get('Completion Status')),
+                            note=safe_str(row.get('Note'))
                         )
 
                         db.session.add(book)
