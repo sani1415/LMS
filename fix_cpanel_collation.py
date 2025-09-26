@@ -54,17 +54,38 @@ def fix_cpanel_collation():
             cursor.execute(f"ALTER TABLE {table_name} CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
             
             # Get all text columns and fix their collation
-            cursor.execute(f"""
-                SELECT COLUMN_NAME, DATA_TYPE 
+            cursor.execute("""
+                SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE, COLUMN_DEFAULT
                 FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE TABLE_SCHEMA = '{db_name}' 
-                AND TABLE_NAME = '{table_name}' 
+                WHERE TABLE_SCHEMA = %s 
+                AND TABLE_NAME = %s 
                 AND DATA_TYPE IN ('varchar', 'char', 'text', 'mediumtext', 'longtext')
-            """)
+            """, (db_name, table_name))
             
             columns = cursor.fetchall()
-            for column_name, data_type in columns:
-                cursor.execute(f"ALTER TABLE {table_name} MODIFY COLUMN {column_name} {data_type.upper()} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+            for column_name, data_type, max_length, is_nullable, default_value in columns:
+                # Build the column definition properly
+                if data_type == 'varchar':
+                    column_def = f"VARCHAR({max_length})"
+                elif data_type == 'char':
+                    column_def = f"CHAR({max_length})"
+                else:
+                    column_def = data_type.upper()
+                
+                # Add NULL/NOT NULL
+                null_clause = "NULL" if is_nullable == 'YES' else "NOT NULL"
+                
+                # Add default value if exists
+                default_clause = ""
+                if default_value is not None:
+                    if isinstance(default_value, str):
+                        default_clause = f" DEFAULT '{default_value}'"
+                    else:
+                        default_clause = f" DEFAULT {default_value}"
+                
+                # Execute the ALTER TABLE command
+                alter_sql = f"ALTER TABLE {table_name} MODIFY COLUMN {column_name} {column_def} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci {null_clause}{default_clause}"
+                cursor.execute(alter_sql)
         
         connection.commit()
         print("✅ Database collation fixed successfully!")
