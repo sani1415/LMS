@@ -11,14 +11,11 @@ echo "📦 Installing/updating dependencies..."
 # Install all requirements
 pip install -r requirements.txt
 
-# Fix pandas/numpy compatibility issues
-pip install --upgrade --force-reinstall numpy==1.24.3 pandas==2.0.3
-
 echo "✅ Dependencies installed successfully!"
 
-# Run database migrations
-echo "🗄️ Running database migrations..."
-python -m flask db upgrade
+# Fix database schema
+echo "🗄️ Fixing database schema..."
+python fix_cpanel_database.py
 
 echo "🎉 Deployment completed successfully!"
 echo "Your LMS application should now be running on cPanel!"

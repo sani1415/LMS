@@ -1382,8 +1382,17 @@ class LibraryManagementSystem {
                 body: JSON.stringify(payload)
             });
 
-            await this[`load${itemType.charAt(0).toUpperCase() + itemType.slice(1)}s`]();
-            this[`render${itemType.charAt(0).toUpperCase() + itemType.slice(1)}sList`]();
+            // Reload the appropriate data and render the list
+            if (itemType === 'category') {
+                await this.loadCategories();
+                this.renderCategoriesList();
+            } else if (itemType === 'member') {
+                await this.loadMembers();
+                this.renderMembersList();
+            } else if (itemType === 'publisher') {
+                await this.loadPublishers();
+                this.renderPublishersList();
+            }
             input.value = '';
             this.showModal('Success', `<p>${itemType.charAt(0).toUpperCase() + itemType.slice(1)} "${name}" added successfully!</p>`, () => this.closeModal());
         } catch (error) {
