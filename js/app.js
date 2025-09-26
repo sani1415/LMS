@@ -142,14 +142,51 @@ class LibraryManagementSystem {
         }
     }
 
-    // Load Books
-    async loadBooks() {
+    // Load Books with Server-Side Pagination
+    async loadBooks(page = 1) {
         try {
-            const data = await this.apiCall('/books');
+            const data = await this.apiCall(`/books?page=${page}&per_page=${this.itemsPerPage}`);
             this.books = data.books || [];
+            this.totalBooks = data.total || 0;
+            this.totalPages = data.pages || 1;
+            this.currentPage = data.current_page || page;
+            
+            // Update pagination controls
+            this.updatePagination(this.totalBooks);
         } catch (error) {
             console.error('Failed to load books:', error);
             this.books = [];
+            this.totalBooks = 0;
+            this.totalPages = 1;
+        }
+    }
+
+    // Load Books with Filters
+    async loadBooksWithFilters(page = 1) {
+        try {
+            // Build query string with filters
+            let queryString = `page=${page}&per_page=${this.itemsPerPage}`;
+            
+            // Add filter parameters
+            Object.keys(this.currentFilters).forEach(key => {
+                if (this.currentFilters[key]) {
+                    queryString += `&${key}=${encodeURIComponent(this.currentFilters[key])}`;
+                }
+            });
+            
+            const data = await this.apiCall(`/books?${queryString}`);
+            this.books = data.books || [];
+            this.totalBooks = data.total || 0;
+            this.totalPages = data.pages || 1;
+            this.currentPage = data.current_page || page;
+            
+            // Update pagination controls
+            this.updatePagination(this.totalBooks);
+        } catch (error) {
+            console.error('Failed to load books with filters:', error);
+            this.books = [];
+            this.totalBooks = 0;
+            this.totalPages = 1;
         }
     }
 
@@ -157,7 +194,7 @@ class LibraryManagementSystem {
     async loadMembers() {
         try {
             const data = await this.apiCall('/members');
-            this.members = data.map(member => member.name);
+            this.members = data; // Store full member objects, not just names
         } catch (error) {
             console.error('Failed to load members:', error);
             this.members = [];
@@ -168,7 +205,7 @@ class LibraryManagementSystem {
     async loadCategories() {
         try {
             const data = await this.apiCall('/categories');
-            this.categories = data.map(category => category.name);
+            this.categories = data; // Store full category objects, not just names
         } catch (error) {
             console.error('Failed to load categories:', error);
             this.categories = [];
@@ -276,6 +313,18 @@ class LibraryManagementSystem {
         // Bulk operations
         document.getElementById('select-all-books').addEventListener('change', (e) => this.toggleSelectAllBooks(e.target.checked));
         document.getElementById('bulk-delete-btn').addEventListener('click', () => this.bulkDeleteBooks());
+        
+        // Bulk operations for Members
+        document.getElementById('select-all-members').addEventListener('change', (e) => this.toggleSelectAllMembers(e.target.checked));
+        document.getElementById('bulk-delete-members-btn').addEventListener('click', () => this.bulkDeleteMembers());
+        
+        // Bulk operations for Categories
+        document.getElementById('select-all-categories').addEventListener('change', (e) => this.toggleSelectAllCategories(e.target.checked));
+        document.getElementById('bulk-delete-categories-btn').addEventListener('click', () => this.bulkDeleteCategories());
+        
+        // Bulk operations for Publishers
+        document.getElementById('select-all-publishers').addEventListener('change', (e) => this.toggleSelectAllPublishers(e.target.checked));
+        document.getElementById('bulk-delete-publishers-btn').addEventListener('click', () => this.bulkDeletePublishers());
 
         // Add log entry
         document.getElementById('add-log-btn').addEventListener('click', () => this.addLogEntry());
@@ -320,7 +369,7 @@ class LibraryManagementSystem {
         
         try {
             if (pageName === 'books') {
-                await this.loadBooks();
+                await this.loadBooks(1);
                 this.renderBooksTable();
             } else if (pageName === 'issue-history') {
                 await this.loadIssueHistory();
@@ -456,10 +505,8 @@ class LibraryManagementSystem {
     // Books Table
     renderBooksTable() {
         const tbody = document.getElementById('books-table-body');
-        const filteredBooks = this.getFilteredBooks();
-        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-        const endIndex = startIndex + this.itemsPerPage;
-        const pageBooks = filteredBooks.slice(startIndex, endIndex);
+        // No need to slice - server already sends the correct page
+        const pageBooks = this.books;
 
         tbody.innerHTML = pageBooks.map((book, index) => `
             <tr>
@@ -504,25 +551,164 @@ class LibraryManagementSystem {
         // Add event listeners to new checkboxes
         this.setupBulkSelectionListeners();
 
-        this.updatePagination(filteredBooks.length);
+        this.updatePagination(this.totalBooks);
     }
 
-    getFilteredBooks() {
-        let filtered = [...this.books];
-        
-        Object.keys(this.currentFilters).forEach(key => {
-            if (this.currentFilters[key]) {
-                filtered = filtered.filter(book => {
-                    const value = book[key]?.toString().toLowerCase() || '';
-                    return value.includes(this.currentFilters[key].toLowerCase());
-                });
-            }
+    // getFilteredBooks() - No longer needed with server-side filtering
+
+    // Bulk Selection Functions
+    setupMemberSelectionListeners() {
+        document.querySelectorAll('.member-select').forEach(checkbox => {
+            checkbox.addEventListener('change', () => this.updateMemberSelectionCount());
         });
-        
-        return filtered;
     }
 
-    applyFilters() {
+    setupCategorySelectionListeners() {
+        document.querySelectorAll('.category-select').forEach(checkbox => {
+            checkbox.addEventListener('change', () => this.updateCategorySelectionCount());
+        });
+    }
+
+    setupPublisherSelectionListeners() {
+        document.querySelectorAll('.publisher-select').forEach(checkbox => {
+            checkbox.addEventListener('change', () => this.updatePublisherSelectionCount());
+        });
+    }
+
+    toggleSelectAllMembers(checked) {
+        document.querySelectorAll('.member-select').forEach(checkbox => {
+            checkbox.checked = checked;
+        });
+        this.updateMemberSelectionCount();
+    }
+
+    toggleSelectAllCategories(checked) {
+        document.querySelectorAll('.category-select').forEach(checkbox => {
+            checkbox.checked = checked;
+        });
+        this.updateCategorySelectionCount();
+    }
+
+    toggleSelectAllPublishers(checked) {
+        document.querySelectorAll('.publisher-select').forEach(checkbox => {
+            checkbox.checked = checked;
+        });
+        this.updatePublisherSelectionCount();
+    }
+
+    updateMemberSelectionCount() {
+        const selected = document.querySelectorAll('.member-select:checked').length;
+        document.getElementById('selected-members-count').textContent = selected;
+    }
+
+    updateCategorySelectionCount() {
+        const selected = document.querySelectorAll('.category-select:checked').length;
+        document.getElementById('selected-categories-count').textContent = selected;
+    }
+
+    updatePublisherSelectionCount() {
+        const selected = document.querySelectorAll('.publisher-select:checked').length;
+        document.getElementById('selected-publishers-count').textContent = selected;
+    }
+
+    // Bulk Delete Functions
+    async bulkDeleteMembers() {
+        const selectedCheckboxes = document.querySelectorAll('.member-select:checked');
+        if (selectedCheckboxes.length === 0) {
+            alert('Please select members to delete.');
+            return;
+        }
+
+        const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.memberId);
+        const selectedNames = selectedIds.map(id => {
+            const member = this.members.find(m => m.id == id);
+            return member ? member.name : 'Unknown';
+        });
+
+        this.showConfirmModal(
+            `Are you sure you want to delete ${selectedNames.length} member(s)?\n\n${selectedNames.join(', ')}`,
+            async () => {
+                try {
+                    for (const id of selectedIds) {
+                        await this.apiCall(`/members/${id}`, { method: 'DELETE' });
+                    }
+                    
+                    await this.loadMembers();
+                    this.renderMembersList();
+                    this.showModal('Success', `<p>${selectedNames.length} member(s) deleted successfully!</p>`, () => this.closeModal());
+                } catch (error) {
+                    console.error('Failed to delete members:', error);
+                    this.showError('Failed to delete some members. Please try again.');
+                }
+            }
+        );
+    }
+
+    async bulkDeleteCategories() {
+        const selectedCheckboxes = document.querySelectorAll('.category-select:checked');
+        if (selectedCheckboxes.length === 0) {
+            alert('Please select categories to delete.');
+            return;
+        }
+
+        const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.categoryId);
+        const selectedNames = selectedIds.map(id => {
+            const category = this.categories.find(c => c.id == id);
+            return category ? category.name : 'Unknown';
+        });
+
+        this.showConfirmModal(
+            `Are you sure you want to delete ${selectedNames.length} category(ies)?\n\n${selectedNames.join(', ')}\n\nNote: Books in these categories will be affected.`,
+            async () => {
+                try {
+                    for (const id of selectedIds) {
+                        await this.apiCall(`/categories/${id}`, { method: 'DELETE' });
+                    }
+                    
+                    await this.loadCategories();
+                    this.renderCategoriesList();
+                    this.showModal('Success', `<p>${selectedNames.length} category(ies) deleted successfully!</p>`, () => this.closeModal());
+                } catch (error) {
+                    console.error('Failed to delete categories:', error);
+                    this.showError('Failed to delete some categories. Please try again.');
+                }
+            }
+        );
+    }
+
+    async bulkDeletePublishers() {
+        const selectedCheckboxes = document.querySelectorAll('.publisher-select:checked');
+        if (selectedCheckboxes.length === 0) {
+            alert('Please select publishers to delete.');
+            return;
+        }
+
+        const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.publisherId);
+        const selectedNames = selectedIds.map(id => {
+            const publisher = this.publishers.find(p => p.id == id);
+            return publisher ? publisher.name : 'Unknown';
+        });
+
+        this.showConfirmModal(
+            `Are you sure you want to delete ${selectedNames.length} publisher(s)?\n\n${selectedNames.join(', ')}\n\nNote: Books from these publishers will be affected.`,
+            async () => {
+                try {
+                    for (const id of selectedIds) {
+                        await this.apiCall(`/publishers/${id}`, { method: 'DELETE' });
+                    }
+                    
+                    await this.loadPublishers();
+                    this.renderPublishersList();
+                    this.showModal('Success', `<p>${selectedNames.length} publisher(s) deleted successfully!</p>`, () => this.closeModal());
+                } catch (error) {
+                    console.error('Failed to delete publishers:', error);
+                    this.showError('Failed to delete some publishers. Please try again.');
+                }
+            }
+        );
+    }
+
+    async applyFilters() {
         this.currentFilters = {};
         document.querySelectorAll('.filter-input, .filter-select').forEach(filter => {
             const column = filter.dataset.column;
@@ -533,29 +719,36 @@ class LibraryManagementSystem {
         });
         
         this.currentPage = 1;
+        await this.loadBooksWithFilters(1);
         this.renderBooksTable();
     }
 
     updatePagination(totalItems) {
-        const totalPages = Math.ceil(totalItems / this.itemsPerPage);
-        document.getElementById('page-info').textContent = `Page ${this.currentPage} of ${totalPages}`;
+        const totalPages = this.totalPages || Math.ceil(totalItems / this.itemsPerPage);
+        document.getElementById('page-info').textContent = `Page ${this.currentPage} of ${totalPages} (${totalItems} total books)`;
         
         document.getElementById('prev-page').disabled = this.currentPage === 1;
         document.getElementById('next-page').disabled = this.currentPage === totalPages;
     }
 
-    previousPage() {
+    async previousPage() {
         if (this.currentPage > 1) {
-            this.currentPage--;
+            if (Object.keys(this.currentFilters).length > 0) {
+                await this.loadBooksWithFilters(this.currentPage - 1);
+            } else {
+                await this.loadBooks(this.currentPage - 1);
+            }
             this.renderBooksTable();
         }
     }
 
-    nextPage() {
-        const filteredBooks = this.getFilteredBooks();
-        const totalPages = Math.ceil(filteredBooks.length / this.itemsPerPage);
-        if (this.currentPage < totalPages) {
-            this.currentPage++;
+    async nextPage() {
+        if (this.currentPage < this.totalPages) {
+            if (Object.keys(this.currentFilters).length > 0) {
+                await this.loadBooksWithFilters(this.currentPage + 1);
+            } else {
+                await this.loadBooks(this.currentPage + 1);
+            }
             this.renderBooksTable();
         }
     }
@@ -611,7 +804,7 @@ class LibraryManagementSystem {
                 <label for="issue-member">Select Member</label>
                 <select id="issue-member" required>
                     <option value="">Select Member</option>
-                    ${this.members.map(member => `<option value="${member}">${member}</option>`).join('')}
+                    ${this.members.map(member => `<option value="${member.name}">${member.name}</option>`).join('')}
                 </select>
             </div>
             <div class="form-group">
@@ -649,8 +842,8 @@ class LibraryManagementSystem {
                 try {
                     // Send to API
                     const response =                 await this.apiCall(`/books/${book.library_id || book.id}/issue`, {
-                    method: 'POST',
-                    body: JSON.stringify({
+                        method: 'POST',
+                        body: JSON.stringify({
                             memberName: member,
                             issueDate: issueDate,
                             returnDate: returnDate
@@ -752,7 +945,7 @@ class LibraryManagementSystem {
                 <label for="edit-publisher">Publisher</label>
                 <select id="edit-publisher">
                     <option value="">Select Publisher</option>
-                    ${this.publishers.map(pub => `<option value="${pub}" ${pub === book.publisher ? 'selected' : ''}>${pub}</option>`).join('')}
+                    ${this.publishers.map(pub => `<option value="${pub.id}" ${pub.id === book.publisher_id ? 'selected' : ''}>${pub.name}</option>`).join('')}
                 </select>
             </div>
             <div class="form-group">
@@ -769,7 +962,7 @@ class LibraryManagementSystem {
                 author: document.getElementById('edit-author').value,
                 volumes: document.getElementById('edit-volumes').value || null,
                 category: document.getElementById('edit-category').value,
-                publisher: document.getElementById('edit-publisher').value || null,
+                publisher_id: document.getElementById('edit-publisher').value || null,
                 year: document.getElementById('edit-year').value || null,
                 note: document.getElementById('edit-note').value || null
             };
@@ -780,7 +973,7 @@ class LibraryManagementSystem {
                     body: JSON.stringify(updatedBookData)
                 });
 
-                await this.loadBooks();
+                await this.loadBooks(this.currentPage);
                 this.renderBooksTable();
                 this.showModal('Success', `<p>Book "${updatedBookData.bookName}" updated successfully!</p>`, () => this.closeModal());
             } catch (error) {
@@ -800,7 +993,7 @@ class LibraryManagementSystem {
                     method: 'DELETE'
                 });
 
-                await this.loadBooks();
+                await this.loadBooks(this.currentPage);
                 this.renderBooksTable();
                 this.showModal('Success', `<p>Book "${book.bookName}" deleted successfully!</p>`, () => this.closeModal());
 
@@ -822,7 +1015,7 @@ class LibraryManagementSystem {
             category: formData.get('category'),
             editor: formData.get('editor') || null,
             volumes: formData.get('volumes') || 1,
-            publisher: formData.get('publisher') || null,
+            publisher_id: formData.get('publisher') || null,
             year: formData.get('year') || null,
             copies: formData.get('copies') || 1,
             status: formData.get('status') || 'Available',
@@ -1052,17 +1245,29 @@ class LibraryManagementSystem {
         
         container.innerHTML = this.members.map(member => `
             <div class="item-row">
-                <span class="item-name">${member}</span>
+                <input type="checkbox" class="member-select" data-member-id="${member.id}" style="margin-right: 10px;">
+                <span class="item-name">${member.name}</span>
                 <div class="action-buttons">
-                    <button class="btn btn-secondary btn-sm" onclick="lms.editMember('${member}')">
+                    <button class="btn btn-secondary btn-sm" onclick="lms.editMember('${member.name}')">
                         <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="lms.deleteMember('${member}')">
+                    <button class="btn btn-danger btn-sm" onclick="lms.deleteMember('${member.name}')">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
             </div>
         `).join('');
+        
+        // Show bulk actions if there are members
+        const bulkActions = document.getElementById('members-bulk-actions');
+        if (this.members.length > 0) {
+            bulkActions.style.display = 'block';
+        } else {
+            bulkActions.style.display = 'none';
+        }
+        
+        // Add event listeners to new checkboxes
+        this.setupMemberSelectionListeners();
     }
 
     async editMember(name) {
@@ -1139,17 +1344,29 @@ class LibraryManagementSystem {
         
         container.innerHTML = this.categories.map(category => `
             <div class="item-row">
-                <span class="item-name">${category}</span>
+                <input type="checkbox" class="category-select" data-category-id="${category.id}" style="margin-right: 10px;">
+                <span class="item-name">${category.name}</span>
                 <div class="action-buttons">
-                    <button class="btn btn-secondary btn-sm" onclick="lms.editCategory('${category}')">
+                    <button class="btn btn-secondary btn-sm" onclick="lms.editCategory('${category.name}')">
                         <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="lms.deleteCategory('${category}')">
+                    <button class="btn btn-danger btn-sm" onclick="lms.deleteCategory('${category.name}')">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
             </div>
         `).join('');
+        
+        // Show bulk actions if there are categories
+        const bulkActions = document.getElementById('categories-bulk-actions');
+        if (this.categories.length > 0) {
+            bulkActions.style.display = 'block';
+        } else {
+            bulkActions.style.display = 'none';
+        }
+        
+        // Add event listeners to new checkboxes
+        this.setupCategorySelectionListeners();
     }
 
     async addCategory() {
@@ -1245,6 +1462,7 @@ class LibraryManagementSystem {
         
         container.innerHTML = this.publishers.map(publisher => `
             <div class="item-row">
+                <input type="checkbox" class="publisher-select" data-publisher-id="${publisher.id}" style="margin-right: 10px;">
                 <span class="item-name">${publisher.name}</span>
                 <div class="action-buttons">
                     <button class="btn btn-secondary btn-sm" onclick="lms.editPublisher('${publisher.name}')">
@@ -1256,6 +1474,17 @@ class LibraryManagementSystem {
                 </div>
             </div>
         `).join('');
+        
+        // Show bulk actions if there are publishers
+        const bulkActions = document.getElementById('publishers-bulk-actions');
+        if (this.publishers.length > 0) {
+            bulkActions.style.display = 'block';
+        } else {
+            bulkActions.style.display = 'none';
+        }
+        
+        // Add event listeners to new checkboxes
+        this.setupPublisherSelectionListeners();
     }
 
     async addPublisher() {
@@ -1433,14 +1662,14 @@ class LibraryManagementSystem {
         const categorySelect = document.getElementById('category');
         if (categorySelect) {
             categorySelect.innerHTML = '<option value="">Select Category</option>' + 
-                this.categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+                this.categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('');
         }
 
         // Publishers dropdown
         const publisherSelect = document.getElementById('publisher');
         if (publisherSelect) {
             publisherSelect.innerHTML = '<option value="">Select Publisher</option>' + 
-                this.publishers.map(pub => `<option value="${pub}">${pub}</option>`).join('');
+                this.publishers.map(pub => `<option value="${pub.id}">${pub.name}</option>`).join('');
         }
     }
 

@@ -63,6 +63,9 @@ def register_routes(app):
             if status:
                 query = query.filter(Book.status == status)
             
+            # Order by ID for consistent pagination
+            query = query.order_by(Book.id)
+            
             # Pagination
             pagination = query.paginate(
                 page=page, per_page=per_page, error_out=False

@@ -393,6 +393,14 @@
                         <input type="text" id="new-member" data-translate-placeholder="members.newMember">
                         <button class="btn btn-primary" id="add-member-btn" data-translate="members.addMemberBtn">Add Member</button>
                     </div>
+                    <div class="bulk-actions" style="margin: 20px 0; display: none;" id="members-bulk-actions">
+                        <label>
+                            <input type="checkbox" id="select-all-members"> Select All
+                        </label>
+                        <button class="btn btn-danger" id="bulk-delete-members-btn" style="margin-left: 10px;">
+                            <i class="fas fa-trash"></i> Delete Selected (<span id="selected-members-count">0</span>)
+                        </button>
+                    </div>
                     <div class="items-list" id="members-list">
                         <!-- Members will be populated here -->
                     </div>
@@ -407,6 +415,14 @@
                         <input type="text" id="new-category" data-translate-placeholder="categories.newCategory">
                         <button class="btn btn-primary" id="add-category-btn" data-translate="categories.addCategoryBtn">Add Category</button>
                     </div>
+                    <div class="bulk-actions" style="margin: 20px 0; display: none;" id="categories-bulk-actions">
+                        <label>
+                            <input type="checkbox" id="select-all-categories"> Select All
+                        </label>
+                        <button class="btn btn-danger" id="bulk-delete-categories-btn" style="margin-left: 10px;">
+                            <i class="fas fa-trash"></i> Delete Selected (<span id="selected-categories-count">0</span>)
+                        </button>
+                    </div>
                     <div class="items-list" id="categories-list">
                         <!-- Categories will be populated here -->
                     </div>
@@ -420,6 +436,14 @@
                     <div class="add-item">
                         <input type="text" id="new-publisher" data-translate-placeholder="publishers.newPublisher">
                         <button class="btn btn-primary" id="add-publisher-btn" data-translate="publishers.addPublisherBtn">Add Publisher</button>
+                    </div>
+                    <div class="bulk-actions" style="margin: 20px 0; display: none;" id="publishers-bulk-actions">
+                        <label>
+                            <input type="checkbox" id="select-all-publishers"> Select All
+                        </label>
+                        <button class="btn btn-danger" id="bulk-delete-publishers-btn" style="margin-left: 10px;">
+                            <i class="fas fa-trash"></i> Delete Selected (<span id="selected-publishers-count">0</span>)
+                        </button>
                     </div>
                     <div class="items-list" id="publishers-list">
                         <!-- Publishers will be populated here -->
