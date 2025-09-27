@@ -267,6 +267,97 @@ class LibraryManagementSystem {
         // Handle navigation for both desktop and mobile nav items
         this.setupNavigationListeners();
 
+        // Mobile Language dropdown functionality
+        const languageToggle = document.getElementById('language-toggle');
+        const languageDropdown = document.getElementById('language-dropdown');
+
+        if (languageToggle && languageDropdown) {
+            this.updateLanguageIcon();
+
+            languageToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                languageDropdown.classList.add('show');
+            });
+
+            // Handle language option clicks
+            languageDropdown.querySelectorAll('.language-option').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    const selectedLang = e.target.dataset.lang;
+                    if (window.i18n) {
+                        window.i18n.loadLanguage(selectedLang);
+                    }
+                    languageDropdown.classList.remove('show');
+                    this.updateLanguageIcon();
+
+                    // Sync desktop dropdown
+                    const languageDropdownDesktop = document.getElementById('language-dropdown-desktop');
+                    if (languageDropdownDesktop) {
+                        this.setActiveLanguageOption(languageDropdownDesktop, selectedLang);
+                    }
+                });
+            });
+        }
+
+        // Desktop Language dropdown functionality
+        const languageToggleDesktop = document.getElementById('language-toggle-desktop');
+        const languageDropdownDesktop = document.getElementById('language-dropdown-desktop');
+
+        if (languageToggleDesktop && languageDropdownDesktop) {
+            this.updateLanguageIcon();
+
+            languageToggleDesktop.addEventListener('click', (e) => {
+                e.stopPropagation();
+                languageDropdownDesktop.classList.add('show');
+            });
+
+            // Handle language option clicks
+            languageDropdownDesktop.querySelectorAll('.language-option').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    const selectedLang = e.target.dataset.lang;
+                    if (window.i18n) {
+                        window.i18n.loadLanguage(selectedLang);
+                    }
+                    languageDropdownDesktop.classList.remove('show');
+                    this.updateLanguageIcon();
+
+                    // Sync mobile dropdown
+                    if (languageDropdown) {
+                        this.setActiveLanguageOption(languageDropdown, selectedLang);
+                    }
+                });
+            });
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            if (languageDropdown) languageDropdown.classList.remove('show');
+            if (languageDropdownDesktop) languageDropdownDesktop.classList.remove('show');
+        });
+
+        // Desktop Logout functionality
+        const logoutBtnDesktop = document.getElementById('logout-btn-desktop');
+        const logoutBtnMobile = document.getElementById('logout-btn');
+
+        if (logoutBtnDesktop) {
+            logoutBtnDesktop.addEventListener('click', () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    localStorage.removeItem('token');
+                    this.token = null;
+                    this.showLoginPage();
+                }
+            });
+        }
+
+        if (logoutBtnMobile) {
+            logoutBtnMobile.addEventListener('click', () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    localStorage.removeItem('token');
+                    this.token = null;
+                    this.showLoginPage();
+                }
+            });
+        }
+
         // Dashboard interactions
         document.getElementById('books-issued-card').addEventListener('click', () => {
             this.showPage('issue-history');
@@ -488,6 +579,35 @@ class LibraryManagementSystem {
             document.body.style.overflow = ''; // Restore scrolling
         }
     }
+
+    updateLanguageIcon() {
+        const languageToggle = document.getElementById('language-toggle');
+        const languageToggleDesktop = document.getElementById('language-toggle-desktop');
+        const languageDropdown = document.getElementById('language-dropdown');
+        const languageDropdownDesktop = document.getElementById('language-dropdown-desktop');
+
+        const currentLang = (languageDropdown && languageDropdown.value) ||
+                           (languageDropdownDesktop && languageDropdownDesktop.value) || 'en';
+
+        // Update mobile icon
+        if (languageToggle) {
+            const icon = languageToggle.querySelector('i');
+            if (icon) {
+                icon.className = 'fas fa-language';
+                languageToggle.title = currentLang === 'ar' ? 'العربية' : 'English';
+            }
+        }
+
+        // Update desktop icon
+        if (languageToggleDesktop) {
+            const icon = languageToggleDesktop.querySelector('i');
+            if (icon) {
+                icon.className = 'fas fa-language';
+                languageToggleDesktop.title = currentLang === 'ar' ? 'العربية' : 'English';
+            }
+        }
+    }
+
 
     // Dashboard
     updateDashboard() {

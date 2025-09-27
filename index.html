@@ -48,59 +48,77 @@
 
             <!-- Row 3: Navigation & Controls -->
             <div class="navbar-controls">
-                <div class="nav-section">
-                    <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+                <!-- Mobile Control Icons (centered) -->
+                <div class="mobile-control-icons">
+                    <button id="mobile-menu-toggle" class="control-icon">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <nav class="navbar-menu">
-                        <ul class="nav-menu">
-                            <li class="nav-item active" data-page="dashboard">
-                                <i class="fas fa-tachometer-alt"></i>
-                                <span data-translate="navigation.dashboard">Dashboard</span>
-                            </li>
-                            <li class="nav-item" data-page="books">
-                                <i class="fas fa-list"></i>
-                                <span data-translate="navigation.books">Book List</span>
-                            </li>
-                            <li class="nav-item" data-page="add-book">
-                                <i class="fas fa-plus-circle"></i>
-                                <span data-translate="navigation.addBook">Add Book</span>
-                            </li>
-                            <li class="nav-item" data-page="issue-history">
-                                <i class="fas fa-history"></i>
-                                <span data-translate="navigation.issueHistory">Issue History</span>
-                            </li>
-                            <li class="nav-item" data-page="library-log">
-                                <i class="fas fa-clipboard-list"></i>
-                                <span data-translate="navigation.libraryLog">Library Log</span>
-                            </li>
-                            <li class="nav-item" data-page="members">
-                                <i class="fas fa-users"></i>
-                                <span data-translate="navigation.members">Manage Members</span>
-                            </li>
-                            <li class="nav-item" data-page="categories">
-                                <i class="fas fa-tags"></i>
-                                <span data-translate="navigation.categories">Manage Categories</span>
-                            </li>
-                            <li class="nav-item" data-page="publishers">
-                                <i class="fas fa-building"></i>
-                                <span data-translate="navigation.publishers">Manage Publishers</span>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
-                <div class="user-controls">
-                    <div class="language-selector">
-                        <i class="fas fa-language"></i>
-                        <select id="language-dropdown">
-                            <option value="ar">العربية</option>
-                            <option value="en">English</option>
-                        </select>
+                    <div class="language-dropdown-container">
+                        <button id="language-toggle" class="control-icon" title="Change Language">
+                            <i class="fas fa-language"></i>
+                        </button>
+                        <div id="language-dropdown" class="language-dropdown">
+                            <div class="language-option" data-lang="ar">العربية</div>
+                            <div class="language-option" data-lang="en">English</div>
+                        </div>
                     </div>
-                    <button id="logout-btn" class="logout-btn" data-translate-title="common.logout">
+                    <button id="logout-btn" class="control-icon" data-translate-title="common.logout">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </div>
+
+                <!-- Desktop Navigation with Icons at End -->
+                <nav class="navbar-menu">
+                    <ul class="nav-menu">
+                        <li class="nav-item active" data-page="dashboard">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span data-translate="navigation.dashboard">Dashboard</span>
+                        </li>
+                        <li class="nav-item" data-page="books">
+                            <i class="fas fa-list"></i>
+                            <span data-translate="navigation.books">Book List</span>
+                        </li>
+                        <li class="nav-item" data-page="add-book">
+                            <i class="fas fa-plus-circle"></i>
+                            <span data-translate="navigation.addBook">Add Book</span>
+                        </li>
+                        <li class="nav-item" data-page="issue-history">
+                            <i class="fas fa-history"></i>
+                            <span data-translate="navigation.issueHistory">Issue History</span>
+                        </li>
+                        <li class="nav-item" data-page="library-log">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span data-translate="navigation.libraryLog">Library Log</span>
+                        </li>
+                        <li class="nav-item" data-page="members">
+                            <i class="fas fa-users"></i>
+                            <span data-translate="navigation.members">Manage Members</span>
+                        </li>
+                        <li class="nav-item" data-page="categories">
+                            <i class="fas fa-tags"></i>
+                            <span data-translate="navigation.categories">Manage Categories</span>
+                        </li>
+                        <li class="nav-item" data-page="publishers">
+                            <i class="fas fa-building"></i>
+                            <span data-translate="navigation.publishers">Manage Publishers</span>
+                        </li>
+                        <!-- Desktop Control Icons at End -->
+                        <li class="desktop-control-icons">
+                            <div class="language-dropdown-container">
+                                <button id="language-toggle-desktop" class="control-icon" title="Change Language">
+                                    <i class="fas fa-language"></i>
+                                </button>
+                                <div id="language-dropdown-desktop" class="language-dropdown">
+                                    <div class="language-option" data-lang="ar">العربية</div>
+                                    <div class="language-option" data-lang="en">English</div>
+                                </div>
+                            </div>
+                            <button id="logout-btn-desktop" class="control-icon" data-translate-title="common.logout">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
             </div>
 
             <!-- Mobile Menu Dropdown -->

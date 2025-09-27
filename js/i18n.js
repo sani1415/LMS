@@ -45,20 +45,61 @@ class I18n {
     }
 
     setupLanguageToggle() {
-        const languageDropdown = document.getElementById('language-dropdown');
-        if (languageDropdown) {
-            languageDropdown.addEventListener('change', (e) => {
-                const selectedLang = e.target.value;
-                this.loadLanguage(selectedLang);
+        // Setup mobile language dropdown
+        this.setupDropdown('language-toggle', 'language-dropdown');
+
+        // Setup desktop language dropdown
+        this.setupDropdown('language-toggle-desktop', 'language-dropdown-desktop');
+    }
+
+    setupDropdown(toggleId, dropdownId) {
+        const toggle = document.getElementById(toggleId);
+        const dropdown = document.getElementById(dropdownId);
+
+        if (!toggle || !dropdown) return;
+
+        // Toggle dropdown visibility when clicking the icon
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            // Hide other dropdowns first
+            document.querySelectorAll('.language-dropdown').forEach(d => {
+                if (d !== dropdown) {
+                    d.classList.remove('show');
+                }
             });
-        }
+
+            // Toggle current dropdown
+            dropdown.classList.toggle('show');
+        });
+
+        // Handle language selection
+        dropdown.querySelectorAll('.language-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const selectedLang = e.target.dataset.lang;
+                this.loadLanguage(selectedLang);
+                dropdown.classList.remove('show');
+            });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!toggle.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
     }
 
     updateLanguageToggle() {
-        const languageDropdown = document.getElementById('language-dropdown');
-        if (languageDropdown) {
-            languageDropdown.value = this.currentLanguage;
-        }
+        // Update visual state of language options to show active language
+        document.querySelectorAll('.language-option').forEach(option => {
+            if (option.dataset.lang === this.currentLanguage) {
+                option.classList.add('active');
+            } else {
+                option.classList.remove('active');
+            }
+        });
     }
 
     applyTranslations() {
