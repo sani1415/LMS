@@ -47,7 +47,7 @@ class LibraryManagementSystem {
     }
 
     showLoginPage() {
-        document.getElementById('login').style.display = 'block';
+        document.getElementById('login').style.display = 'flex';
         document.querySelector('.app-container').style.display = 'none';
     }
 
