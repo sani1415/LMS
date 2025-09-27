@@ -1,7 +1,9 @@
 {
   "app": {
     "title": "Library Management System",
-    "name": "LMS"
+    "name": "LMS",
+    "fullName": "Library Management System",
+    "description": "Manage your library resources efficiently and effectively"
   },
   "login": {
     "title": "Login",

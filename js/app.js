@@ -249,30 +249,23 @@ class LibraryManagementSystem {
     setupEventListeners() {
         // Mobile menu toggle
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-        const sidebar = document.querySelector('.sidebar');
+        const mobileNavMenu = document.querySelector('.mobile-nav-menu');
         const mobileOverlay = document.getElementById('mobile-overlay');
-        
+
         if (mobileMenuToggle) {
             mobileMenuToggle.addEventListener('click', () => {
                 this.toggleMobileMenu();
             });
         }
-        
+
         if (mobileOverlay) {
             mobileOverlay.addEventListener('click', () => {
                 this.closeMobileMenu();
             });
         }
-        
-        // Close mobile menu when clicking on nav items
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const page = item.dataset.page;
-                this.showPage(page);
-                this.updateActiveNav(item);
-                this.closeMobileMenu(); // Close mobile menu after navigation
-            });
-        });
+
+        // Handle navigation for both desktop and mobile nav items
+        this.setupNavigationListeners();
 
         // Dashboard interactions
         document.getElementById('books-issued-card').addEventListener('click', () => {
@@ -429,20 +422,39 @@ class LibraryManagementSystem {
         }
     }
 
-    updateActiveNav(activeItem) {
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        activeItem.classList.add('active');
+    setupNavigationListeners() {
+        // Handle both desktop and mobile navigation items
+        const allNavItems = document.querySelectorAll('.nav-item');
+        allNavItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const page = item.dataset.page;
+                this.showPage(page);
+                this.updateActiveNav(page);
+                this.closeMobileMenu(); // Close mobile menu after navigation
+            });
+        });
+    }
+
+    updateActiveNav(activePage) {
+        // Update active state for both desktop and mobile nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            if (item.dataset.page === activePage) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
     }
 
     // Mobile Menu Functions
     toggleMobileMenu() {
-        const sidebar = document.querySelector('.sidebar');
+        const mobileNavMenu = document.querySelector('.mobile-nav-menu');
         const mobileOverlay = document.getElementById('mobile-overlay');
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-        
-        if (sidebar && mobileOverlay && mobileMenuToggle) {
-            const isOpen = sidebar.classList.contains('mobile-open');
-            
+
+        if (mobileNavMenu && mobileOverlay && mobileMenuToggle) {
+            const isOpen = mobileNavMenu.classList.contains('active');
+
             if (isOpen) {
                 this.closeMobileMenu();
             } else {
@@ -452,12 +464,12 @@ class LibraryManagementSystem {
     }
 
     openMobileMenu() {
-        const sidebar = document.querySelector('.sidebar');
+        const mobileNavMenu = document.querySelector('.mobile-nav-menu');
         const mobileOverlay = document.getElementById('mobile-overlay');
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-        
-        if (sidebar && mobileOverlay && mobileMenuToggle) {
-            sidebar.classList.add('mobile-open');
+
+        if (mobileNavMenu && mobileOverlay && mobileMenuToggle) {
+            mobileNavMenu.classList.add('active');
             mobileOverlay.classList.add('active');
             mobileMenuToggle.innerHTML = '<i class="fas fa-times"></i>'; // Change to X icon
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
@@ -465,12 +477,12 @@ class LibraryManagementSystem {
     }
 
     closeMobileMenu() {
-        const sidebar = document.querySelector('.sidebar');
+        const mobileNavMenu = document.querySelector('.mobile-nav-menu');
         const mobileOverlay = document.getElementById('mobile-overlay');
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-        
-        if (sidebar && mobileOverlay && mobileMenuToggle) {
-            sidebar.classList.remove('mobile-open');
+
+        if (mobileNavMenu && mobileOverlay && mobileMenuToggle) {
+            mobileNavMenu.classList.remove('active');
             mobileOverlay.classList.remove('active');
             mobileMenuToggle.innerHTML = '<i class="fas fa-bars"></i>'; // Change back to hamburger icon
             document.body.style.overflow = ''; // Restore scrolling
