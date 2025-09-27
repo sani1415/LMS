@@ -945,11 +945,17 @@ def register_routes(app):
             # Get all books
             books = Book.query.all()
 
-            # Create temporary file with UTF-8 encoding
-            temp_file = tempfile.NamedTemporaryFile(mode='w+', suffix='.csv', delete=False, encoding='utf-8')
+            # Create temporary file in binary mode for better Unicode control
+            temp_file = tempfile.NamedTemporaryFile(mode='wb', suffix='.csv', delete=False)
             
             try:
-                writer = csv.writer(temp_file)
+                # Write UTF-8 BOM manually for better Excel compatibility
+                temp_file.write(b'\xef\xbb\xbf')
+                
+                # Create CSV content in memory first
+                import io
+                csv_buffer = io.StringIO()
+                writer = csv.writer(csv_buffer)
 
                 # Write CSV header
                 headers = [
@@ -975,7 +981,9 @@ def register_routes(app):
                     ]
                     writer.writerow(row)
 
-                # Close the temporary file
+                # Write CSV content to file with UTF-8 encoding
+                csv_content = csv_buffer.getvalue()
+                temp_file.write(csv_content.encode('utf-8'))
                 temp_file.close()
 
                 # Serve the temporary file
