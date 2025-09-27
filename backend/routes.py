@@ -935,53 +935,64 @@ def register_routes(app):
     # Export books to CSV endpoint
     @app.route('/api/books/export-csv', methods=['GET'])
     def export_books_to_csv():
+        import tempfile
+        import os
+        
         try:
             from flask import send_file
-            import io
             import csv
 
             # Get all books
             books = Book.query.all()
 
-            # Create CSV file in memory with UTF-8 encoding
-            output = io.StringIO()
-            writer = csv.writer(output)
+            # Create temporary file with UTF-8 encoding
+            temp_file = tempfile.NamedTemporaryFile(mode='w+', suffix='.csv', delete=False, encoding='utf-8')
+            
+            try:
+                writer = csv.writer(temp_file)
 
-            # Write CSV header
-            headers = [
-                'Book Name', 'Author', 'Category', 'Editor', 'Volumes', 
-                'Publisher', 'Year', 'Copies', 'Status', 'Completion Status', 'Note'
-            ]
-            writer.writerow(headers)
-
-            # Write book data
-            for book in books:
-                row = [
-                    book.book_name or '',
-                    book.author or '',
-                    book.category.name if book.category else '',
-                    book.editor or '',
-                    book.volumes or 1,
-                    book.publisher.name if book.publisher else '',
-                    book.year or '',
-                    book.copies or 1,
-                    book.status or 'Available',
-                    book.completion_status or '',
-                    book.note or ''
+                # Write CSV header
+                headers = [
+                    'Book Name', 'Author', 'Category', 'Editor', 'Volumes', 
+                    'Publisher', 'Year', 'Copies', 'Status', 'Completion Status', 'Note'
                 ]
-                writer.writerow(row)
+                writer.writerow(headers)
 
-            # Convert StringIO to BytesIO with UTF-8 encoding
-            csv_bytes = io.BytesIO()
-            csv_bytes.write(output.getvalue().encode('utf-8'))
-            csv_bytes.seek(0)
+                # Write book data
+                for book in books:
+                    row = [
+                        book.book_name or '',
+                        book.author or '',
+                        book.category.name if book.category else '',
+                        book.editor or '',
+                        book.volumes or 1,
+                        book.publisher.name if book.publisher else '',
+                        book.year or '',
+                        book.copies or 1,
+                        book.status or 'Available',
+                        book.completion_status or '',
+                        book.note or ''
+                    ]
+                    writer.writerow(row)
 
-            return send_file(
-                csv_bytes,
-                as_attachment=True,
-                download_name='library_books_export.csv',
-                mimetype='text/csv; charset=utf-8'
-            )
+                # Close the temporary file
+                temp_file.close()
+
+                # Serve the temporary file
+                return send_file(
+                    temp_file.name,
+                    as_attachment=True,
+                    download_name='library_books_export.csv',
+                    mimetype='text/csv; charset=utf-8'
+                )
+
+            finally:
+                # Clean up: delete the temporary file after serving
+                try:
+                    os.unlink(temp_file.name)
+                except OSError:
+                    # Ignore errors if file was already deleted
+                    pass
 
         except Exception as e:
             return jsonify({'error': f'Error exporting books: {str(e)}'}), 500
