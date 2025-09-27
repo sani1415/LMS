@@ -52,15 +52,40 @@ class LibraryManagementSystem {
     }
 
     setupLogout() {
+        // Remove any existing event listeners first
         const logoutBtn = document.getElementById('logout-btn');
+        const logoutBtnDesktop = document.getElementById('logout-btn-desktop');
+
         if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                if (confirm('Are you sure you want to logout?')) {
-                    localStorage.removeItem('token');
-                    this.token = null;
-                    this.showLoginPage();
-                }
+            // Clone the node to remove all existing event listeners
+            const newLogoutBtn = logoutBtn.cloneNode(true);
+            logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+
+            newLogoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.handleLogout();
             });
+        }
+
+        if (logoutBtnDesktop) {
+            // Clone the node to remove all existing event listeners
+            const newLogoutBtnDesktop = logoutBtnDesktop.cloneNode(true);
+            logoutBtnDesktop.parentNode.replaceChild(newLogoutBtnDesktop, logoutBtnDesktop);
+
+            newLogoutBtnDesktop.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.handleLogout();
+            });
+        }
+    }
+
+    handleLogout() {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('token');
+            this.token = null;
+            this.showLoginPage();
         }
     }
 
