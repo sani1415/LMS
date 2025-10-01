@@ -44,7 +44,7 @@ except (AttributeError, io.UnsupportedOperation, OSError):
 
 
 # Determine the config name from the environment variable
-# Use APP_ENV instead of deprecated FLASK_ENV
+# Use APP_ENV instead of deprecated FLASK_ENV, but support both for compatibility
 config_name = os.environ.get('APP_ENV') or os.environ.get('FLASK_ENV', 'development')
 
 # Initialize Flask app
@@ -114,7 +114,9 @@ def handle_database_errors(error):
             db.session.remove()
             # Try to create a new session
             db.session.close()
-            db.session.bind.pool.dispose()
+            # Safely dispose of connection pool
+            if hasattr(db.session, 'bind') and db.session.bind and hasattr(db.session.bind, 'pool'):
+                db.session.bind.pool.dispose()
         except Exception as recovery_error:
             print(f"Error during connection recovery: {recovery_error}")
         
@@ -126,8 +128,9 @@ def handle_database_errors(error):
 def check_database_connection():
     """Check if database connection is healthy and recover if needed"""
     try:
-        # Test the connection with a simple query
-        db.session.execute('SELECT 1')
+        # Test the connection with a simple query using text()
+        from sqlalchemy import text
+        db.session.execute(text('SELECT 1'))
         db.session.commit()
         return True
     except Exception as e:
@@ -137,9 +140,12 @@ def check_database_connection():
             db.session.rollback()
             db.session.remove()
             db.session.close()
-            db.session.bind.pool.dispose()
+            # Safely dispose of connection pool
+            if hasattr(db.session, 'bind') and db.session.bind and hasattr(db.session.bind, 'pool'):
+                db.session.bind.pool.dispose()
             # Test again after cleanup
-            db.session.execute('SELECT 1')
+            from sqlalchemy import text
+            db.session.execute(text('SELECT 1'))
             db.session.commit()
             print("Database connection recovered successfully")
             return True
