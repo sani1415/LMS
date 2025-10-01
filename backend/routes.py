@@ -19,9 +19,13 @@ def register_routes(app):
     @app.route('/api/dashboard', methods=['GET'])
     def get_dashboard_stats():
         try:
-            # Check database connection health first
-            from app import check_database_connection
-            if not check_database_connection():
+            # Simple database connection test
+            try:
+                from sqlalchemy import text
+                db.session.execute(text('SELECT 1'))
+                db.session.commit()
+            except Exception as db_error:
+                print(f"Dashboard database connection test failed: {db_error}")
                 return jsonify({'error': 'Database connection issue, please try again'}), 503
                 
             total_books = Book.query.count()
@@ -886,9 +890,13 @@ def register_routes(app):
     @app.route('/api/books/csv-template', methods=['GET'])
     def download_csv_template():
         try:
-            # Check database connection health first
-            from app import check_database_connection
-            if not check_database_connection():
+            # Simple database connection test instead of importing from app
+            try:
+                from sqlalchemy import text
+                db.session.execute(text('SELECT 1'))
+                db.session.commit()
+            except Exception as db_error:
+                print(f"Database connection test failed: {db_error}")
                 return jsonify({'error': 'Database connection issue, please try again'}), 503
                 
             from flask import send_file
@@ -965,9 +973,13 @@ def register_routes(app):
     @app.route('/api/books/csv-template-info', methods=['GET'])
     def get_csv_template_info():
         try:
-            # Check database connection health first
-            from app import check_database_connection
-            if not check_database_connection():
+            # Simple database connection test instead of importing from app
+            try:
+                from sqlalchemy import text
+                db.session.execute(text('SELECT 1'))
+                db.session.commit()
+            except Exception as db_error:
+                print(f"Database connection test failed: {db_error}")
                 return jsonify({'error': 'Database connection issue, please try again'}), 503
                 
             return jsonify({
