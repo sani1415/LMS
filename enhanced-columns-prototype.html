@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Columns - Keep All Columns</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/enhanced-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Enhanced Column Styling - Keep All Columns Separate */
+        
+        /* Enhanced Book Name Column with Highlighting */
+        .data-table .book-name-cell {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a365d;
+            line-height: 1.4;
+            margin-bottom: 4px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .data-table .book-name-cell:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .data-table .book-name-cell::before {
+            content: "📖";
+            margin-right: 8px;
+            font-size: 14px;
+        }
+        
+        .data-table .book-name-cell:hover::before {
+            content: "✨";
+        }
+        
+        /* Enhanced Author Column */
+        .data-table .author-cell {
+            font-size: 14px;
+            color: #495057;
+            font-style: italic;
+        }
+        
+        /* Enhanced Category Column */
+        .data-table .category-cell {
+            font-size: 13px;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        /* Enhanced Editor Column */
+        .data-table .editor-cell {
+            color: #6c757d;
+            font-size: 13px;
+        }
+        
+        /* Enhanced Volumes Column */
+        .data-table .volumes-cell {
+            text-align: center;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .data-table .volumes-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        /* Enhanced Publisher Column */
+        .data-table .publisher-cell {
+            color: #495057;
+            font-size: 13px;
+            position: relative;
+            padding-left: 18px;
+        }
+        
+        .data-table .publisher-cell::before {
+            content: "🏢";
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 11px;
+        }
+        
+        /* Enhanced Year Column */
+        .data-table .year-cell {
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .data-table .year-badge {
+            background: #fff3e0;
+            color: #f57c00;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        /* Enhanced Copies Column */
+        .data-table .copies-cell {
+            text-align: center;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+        
+        .data-table .copies-badge {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        /* Enhanced Status Column */
+        .data-table .status-cell {
+            text-align: center;
+        }
+        
+        .data-table .status-badge {
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+        
+        .data-table .status-badge.available {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .data-table .status-badge.issued {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .data-table .status-badge.maintenance {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        /* Enhanced Completion Status Column */
+        .data-table .completion-cell {
+            text-align: center;
+        }
+        
+        .data-table .completion-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .data-table .completion-badge.complete {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .data-table .completion-badge.incomplete {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .data-table .completion-badge.in-progress {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .data-table .completion-badge.missing-pages {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+        
+        /* Enhanced Note Column */
+        .data-table .note-cell {
+            font-size: 12px;
+            color: #6c757d;
+            font-style: italic;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .data-table .note-cell:hover {
+            white-space: normal;
+            background: #f8f9fa;
+            padding: 4px;
+            border-radius: 4px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Enhanced Table Row Hover */
+        .data-table tbody tr:hover {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        
+        /* Enhanced Library ID Column */
+        .data-table .library-id-cell {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #495057;
+            text-align: center;
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        
+        /* Prototype container */
+        .prototype-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .prototype-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .prototype-description {
+            color: #6c757d;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .enhancement-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .enhancement-list h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .enhancement-list ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .enhancement-list li {
+            padding: 5px 0;
+            color: #495057;
+        }
+        
+        .enhancement-list li::before {
+            content: "✅ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        /* Alternative Book Name Highlighting Styles */
+        
+        /* Style 1: Card-like highlighting */
+        .data-table .book-name-card {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c3e50;
+            padding: 10px 14px;
+            background: white;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .data-table .book-name-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Style 2: Glow effect highlighting */
+        .data-table .book-name-glow {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c3e50;
+            padding: 8px 12px;
+            background: #ffffff;
+            border-radius: 6px;
+            border: 1px solid #e1e8ed;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .data-table .book-name-glow:hover {
+            background: #f8f9fa;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+        }
+        
+        /* Style 3: Underline highlighting */
+        .data-table .book-name-underline {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c3e50;
+            padding: 6px 0;
+            border-bottom: 3px solid #667eea;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .data-table .book-name-underline:hover {
+            color: #667eea;
+            border-bottom-color: #764ba2;
+        }
+        
+        .data-table .book-name-underline::after {
+            content: "";
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: #764ba2;
+            transition: width 0.3s ease;
+        }
+        
+        .data-table .book-name-underline:hover::after {
+            width: 100%;
+        }
+        
+        /* Style 4: Badge highlighting */
+        .data-table .book-name-badge {
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: inline-block;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .data-table .book-name-badge:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Style examples container */
+        .style-examples [class*="book-name-"] {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .style-examples [class*="book-name-"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .style-examples [class*="book-name-"]:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="prototype-container">
+        <h1 class="prototype-title">📚 Enhanced Columns Design - Keep All Columns</h1>
+        <p class="prototype-description">
+            All columns remain separate for proper filtering. Only the visual styling and content presentation within each column is enhanced.
+        </p>
+        
+        <div class="enhancement-list">
+            <h3>🎨 Book Name Highlighting Styles:</h3>
+            <ul>
+                <li><strong>Current Style:</strong> Gradient background with left border and book icon</li>
+                <li><strong>Card Style:</strong> Card-like appearance with shadow and hover lift</li>
+                <li><strong>Glow Style:</strong> Subtle glow effect on hover</li>
+                <li><strong>Underline Style:</strong> Animated underline that expands on hover</li>
+                <li><strong>Badge Style:</strong> Pill-shaped badge with gradient background</li>
+            </ul>
+        </div>
+
+        <!-- Style Examples -->
+        <div style="margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">🎯 Book Name Highlighting Examples:</h3>
+            <div class="style-examples" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+                <div class="book-name-cell" title="Click to apply this style">Current Style</div>
+                <div class="book-name-card" title="Click to apply this style">Card Style</div>
+                <div class="book-name-glow" title="Click to apply this style">Glow Style</div>
+                <div class="book-name-underline" title="Click to apply this style">Underline Style</div>
+                <div class="book-name-badge" title="Click to apply this style">Badge Style</div>
+            </div>
+            <p style="margin-top: 15px; color: #6c757d; font-size: 14px;">
+                <strong>Note:</strong> Click any style above to apply it to the table below. Hover over each style to see the interactive effects.
+            </p>
+            <p class="current-style-indicator" style="margin-top: 10px; color: #667eea; font-weight: 600; font-size: 14px;">
+                Current Style: ENHANCED
+            </p>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="select-all-books"> Select
+                        </th>
+                        <th>Library ID</th>
+                        <th>
+                            <span>Book Name</span>
+                            <input type="text" class="filter-input" data-column="bookName" placeholder="Filter...">
+                        </th>
+                        <th>
+                            <span>Author</span>
+                            <input type="text" class="filter-input" data-column="author" placeholder="Filter...">
+                        </th>
+                        <th>
+                            <span>Category</span>
+                            <input type="text" class="filter-input" data-column="category" placeholder="Filter...">
+                        </th>
+                        <th>
+                            <span>Editor</span>
+                            <input type="text" class="filter-input" data-column="editor" placeholder="Filter...">
+                        </th>
+                        <th>
+                            <span>Volumes</span>
+                            <input type="text" class="filter-input" data-column="volumes" placeholder="Filter...">
+                        </th>
+                        <th>
+                            <span>Publisher</span>
+                            <input type="text" class="filter-input" data-column="publisher" placeholder="Filter...">
+                        </th>
+                        <th>
+                            <span>Year</span>
+                            <input type="text" class="filter-input" data-column="year" placeholder="Filter...">
+                        </th>
+                        <th>
+                            <span>Copies</span>
+                            <input type="text" class="filter-input" data-column="copies" placeholder="Filter...">
+                        </th>
+                        <th>
+                            <span>Status</span>
+                            <select class="filter-select" data-column="status">
+                                <option value="">All</option>
+                                <option value="Available">Available</option>
+                                <option value="Issued">Issued</option>
+                                <option value="Maintenance">Maintenance</option>
+                            </select>
+                        </th>
+                        <th>
+                            <span>Completion</span>
+                            <select class="filter-select" data-column="completion_status">
+                                <option value="">All</option>
+                                <option value="Complete">Complete</option>
+                                <option value="Incomplete">Incomplete</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Missing Pages">Missing Pages</option>
+                            </select>
+                        </th>
+                        <th>
+                            <span>Note</span>
+                            <input type="text" class="filter-input" data-column="note" placeholder="Filter...">
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="checkbox" class="book-select" data-book-id="1"></td>
+                        <td><span class="library-id-cell">LIB001</span></td>
+                        <td><div class="book-name-cell">The Great Gatsby</div></td>
+                        <td><div class="author-cell">F. Scott Fitzgerald</div></td>
+                        <td><div class="category-cell">Fiction</div></td>
+                        <td><div class="editor-cell">Maxwell Perkins</div></td>
+                        <td><span class="volumes-badge">1</span></td>
+                        <td><div class="publisher-cell">Scribner</div></td>
+                        <td><span class="year-badge">1925</span></td>
+                        <td><span class="copies-badge">2</span></td>
+                        <td><span class="status-badge available">Available</span></td>
+                        <td><span class="completion-badge complete">Complete</span></td>
+                        <td><div class="note-cell">Classic American novel about the Jazz Age</div></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary btn-sm"><i class="fas fa-share"></i></button>
+                                <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="book-select" data-book-id="2"></td>
+                        <td><span class="library-id-cell">LIB002</span></td>
+                        <td><div class="book-name-cell">To Kill a Mockingbird</div></td>
+                        <td><div class="author-cell">Harper Lee</div></td>
+                        <td><div class="category-cell">Fiction</div></td>
+                        <td><div class="editor-cell">J.B. Lippincott</div></td>
+                        <td><span class="volumes-badge">1</span></td>
+                        <td><div class="publisher-cell">J.B. Lippincott</div></td>
+                        <td><span class="year-badge">1960</span></td>
+                        <td><span class="copies-badge">1</span></td>
+                        <td><span class="status-badge issued">Issued</span></td>
+                        <td><span class="completion-badge complete">Complete</span></td>
+                        <td><div class="note-cell">Pulitzer Prize winning novel</div></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary btn-sm"><i class="fas fa-undo"></i></button>
+                                <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="book-select" data-book-id="3"></td>
+                        <td><span class="library-id-cell">LIB003</span></td>
+                        <td><div class="book-name-cell">1984</div></td>
+                        <td><div class="author-cell">George Orwell</div></td>
+                        <td><div class="category-cell">Dystopian</div></td>
+                        <td><div class="editor-cell">Secker & Warburg</div></td>
+                        <td><span class="volumes-badge">1</span></td>
+                        <td><div class="publisher-cell">Secker & Warburg</div></td>
+                        <td><span class="year-badge">1949</span></td>
+                        <td><span class="copies-badge">3</span></td>
+                        <td><span class="status-badge available">Available</span></td>
+                        <td><span class="completion-badge incomplete">Incomplete</span></td>
+                        <td><div class="note-cell">Classic dystopian novel - missing pages 45-47</div></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary btn-sm"><i class="fas fa-share"></i></button>
+                                <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="book-select" data-book-id="4"></td>
+                        <td><span class="library-id-cell">LIB004</span></td>
+                        <td><div class="book-name-cell">Pride and Prejudice</div></td>
+                        <td><div class="author-cell">Jane Austen</div></td>
+                        <td><div class="category-cell">Romance</div></td>
+                        <td><div class="editor-cell">Thomas Egerton</div></td>
+                        <td><span class="volumes-badge">2</span></td>
+                        <td><div class="publisher-cell">Thomas Egerton</div></td>
+                        <td><span class="year-badge">1813</span></td>
+                        <td><span class="copies-badge">1</span></td>
+                        <td><span class="status-badge maintenance">Maintenance</span></td>
+                        <td><span class="completion-badge in-progress">In Progress</span></td>
+                        <td><div class="note-cell">Volume 2 needs binding repair</div></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary btn-sm"><i class="fas fa-tools"></i></button>
+                                <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        console.log('🎨 Enhanced Columns Design loaded!');
+        console.log('✨ All columns remain separate for filtering');
+        console.log('🎯 Only visual styling is enhanced');
+        
+        // Function to switch book name highlighting styles
+        function switchBookNameStyle(styleName) {
+            // Find all book name cells in the table
+            const bookNames = document.querySelectorAll('td .book-name-cell, td [class*="book-name-"]');
+            
+            bookNames.forEach(name => {
+                // Remove all style classes
+                name.classList.remove('book-name-cell', 'book-name-card', 'book-name-glow', 'book-name-underline', 'book-name-badge');
+                
+                // Add the new style class
+                name.classList.add(styleName);
+            });
+            
+            // Update the current style indicator
+            const currentStyleElement = document.querySelector('.current-style-indicator');
+            if (currentStyleElement) {
+                currentStyleElement.textContent = `Current Style: ${styleName.replace('book-name-', '').replace('-', ' ').toUpperCase()}`;
+            }
+            
+            console.log(`🎨 Switched to ${styleName} style`);
+        }
+        
+        // Add click handlers to style examples
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers to style examples
+            const styleExamples = document.querySelectorAll('.style-examples [class*="book-name-"]');
+            
+            styleExamples.forEach(example => {
+                example.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const className = this.className.split(' ').find(cls => cls.startsWith('book-name-'));
+                    if (className) {
+                        switchBookNameStyle(className);
+                        
+                        // Add visual feedback
+                        this.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            this.style.transform = '';
+                        }, 150);
+                    }
+                });
+                
+                // Add hover cursor
+                example.style.cursor = 'pointer';
+            });
+            
+            console.log('🎨 Style switching initialized!');
+        });
+        
+        // Make function globally available
+        window.switchBookNameStyle = switchBookNameStyle;
+    </script>
+</body>
+</html>

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/icon-enhancements.css">
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/mobile-enhancements.css">
+    <link rel="stylesheet" href="css/book-name-highlighting.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Arabic Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -239,9 +240,13 @@
                         <thead>
                             <tr>
                                 <th>
-                                    <input type="checkbox" id="select-all-books"> Select
+                                    <span>Select</span>
+                                    <input type="checkbox" id="select-all-books">
                                 </th>
-                                <th>Library ID</th>
+                                <th>
+                                    <span>Library ID</span>
+                                    <input type="text" class="filter-input" data-column="libraryId" placeholder="Filter...">
+                                </th>
                                 <th>
                                     <span>Book Name</span>
                                     <input type="text" class="filter-input" data-column="bookName" placeholder="Filter...">
@@ -280,7 +285,6 @@
                                         <option value="">All</option>
                                         <option value="Available">Available</option>
                                         <option value="Issued">Issued</option>
-                                        <option value="Maintenance">Maintenance</option>
                                     </select>
                                 </th>
                                 <th>

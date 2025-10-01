@@ -226,7 +226,6 @@
 
 .data-table tbody tr:hover {
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    transform: scale(1.01);
 }
 
 /* 6. Enhanced Form Elements */

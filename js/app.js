@@ -680,7 +680,9 @@ class LibraryManagementSystem {
                 <td>${book.year || '-'}</td>
                 <td>${book.copies || '-'}</td>
                 <td>
-                    <span class="status-badge ${book.status.toLowerCase()}">${book.status}</span>
+                    <span class="status-icon ${book.status.toLowerCase()}">
+                        ${book.status === 'Available' ? '+' : '-'}
+                    </span>
                 </td>
                 <td>${book.completion_status || '-'}</td>
                 <td>${book.note || '-'}</td>

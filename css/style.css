@@ -603,6 +603,11 @@ body.arabic-text .logout-btn {
     position: relative;
 }
 
+.data-table th input[type="checkbox"] {
+    margin-top: 5px;
+    transform: scale(1.1);
+}
+
 .data-table td {
     padding: 12px;
     border-bottom: 1px solid #e9ecef;
