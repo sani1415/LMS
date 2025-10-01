@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-translate="app.title">Library Management System</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/enhanced-styles.css">
+    <link rel="stylesheet" href="css/icon-enhancements.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/mobile-enhancements.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Arabic Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -166,11 +170,11 @@
         <!-- Main Content Area -->
         <main class="main-content">
             <!-- Dashboard Page -->
-            <div id="dashboard" class="page active">
+            <div id="dashboard" class="page active fade-in-up">
                 <h1 data-translate="dashboard.title">Dashboard</h1>
-                <div class="stats-grid">
+                <div class="stats-grid synchronized">
                     <div class="stat-card">
-                        <div class="stat-icon">
+                        <div class="stat-icon books">
                             <i class="fas fa-book"></i>
                         </div>
                         <div class="stat-content">
@@ -179,7 +183,7 @@
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon">
+                        <div class="stat-icon authors">
                             <i class="fas fa-user-edit"></i>
                         </div>
                         <div class="stat-content">
@@ -188,7 +192,7 @@
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon">
+                        <div class="stat-icon categories">
                             <i class="fas fa-tags"></i>
                         </div>
                         <div class="stat-content">
@@ -197,7 +201,7 @@
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon">
+                        <div class="stat-icon available">
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <div class="stat-content">
@@ -206,7 +210,7 @@
                         </div>
                     </div>
                     <div class="stat-card clickable" id="books-issued-card">
-                        <div class="stat-icon">
+                        <div class="stat-icon issued">
                             <i class="fas fa-clock"></i>
                         </div>
                         <div class="stat-content">
@@ -218,7 +222,7 @@
             </div>
 
             <!-- Book List Page -->
-            <div id="books" class="page">
+            <div id="books" class="page fade-in-up">
                 <div class="page-header">
                     <h1 data-translate="books.title">Book List</h1>
                     <div class="header-actions">
@@ -309,7 +313,7 @@
             </div>
 
             <!-- Add Book Page -->
-            <div id="add-book" class="page">
+            <div id="add-book" class="page fade-in-up">
                 <h1 data-translate="addBook.title">Add New Book</h1>
                 <div class="form-container">
                     <form id="add-book-form">
@@ -402,7 +406,7 @@
             </div>
 
             <!-- Issue History Page -->
-            <div id="issue-history" class="page">
+            <div id="issue-history" class="page fade-in-up">
                 <h1>Issue History</h1>
                 <div class="table-container">
                     <table class="data-table">
@@ -438,7 +442,7 @@
             </div>
 
             <!-- Library Log Page -->
-            <div id="library-log" class="page">
+            <div id="library-log" class="page fade-in-up">
                 <h1>Library Log</h1>
                 <div class="log-container">
                     <div class="add-log-entry">
@@ -452,7 +456,7 @@
             </div>
 
             <!-- Manage Members Page -->
-            <div id="members" class="page">
+            <div id="members" class="page fade-in-up">
                 <h1 data-translate="members.title">Manage Members</h1>
                 <div class="manage-container">
                     <div class="add-item">
@@ -474,7 +478,7 @@
             </div>
 
             <!-- Manage Categories Page -->
-            <div id="categories" class="page">
+            <div id="categories" class="page fade-in-up">
                 <h1 data-translate="categories.title">Manage Categories</h1>
                 <div class="manage-container">
                     <div class="add-item">
@@ -496,7 +500,7 @@
             </div>
 
             <!-- Manage Publishers Page -->
-            <div id="publishers" class="page">
+            <div id="publishers" class="page fade-in-up">
                 <h1 data-translate="publishers.title">Manage Publishers</h1>
                 <div class="manage-container">
                     <div class="add-item">
@@ -553,8 +557,14 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
+    <!-- Floating Action Button -->
+    <button class="fab" onclick="scrollToTop()" title="Scroll to Top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
     <script src="js/i18n.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/enhanced-interactions.js"></script>
     </div>
 </body>
 </html>

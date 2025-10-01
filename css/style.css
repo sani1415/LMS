@@ -818,15 +818,19 @@ body.arabic-text .logout-btn {
 /* Table action buttons */
 .data-table .action-buttons {
     display: flex;
-    gap: 4px;
+    gap: 2px;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     white-space: nowrap;
+    flex-wrap: nowrap;
+    min-width: 110px;
 }
 
 .data-table .action-buttons .btn {
-    min-width: 32px;
-    padding: 6px 8px;
+    min-width: 28px;
+    padding: 4px 6px;
+    font-size: 12px;
+    line-height: 1;
 }
 
 .item-name {

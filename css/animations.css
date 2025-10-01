@@ -1,0 +1,345 @@
+/* Beautiful Animations & Transitions for LMS */
+
+/* 1. Page Transition Animations */
+.page {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 2. Card Entrance Animations - Multiple Options */
+
+/* Option 1: Synchronized (all cards appear together) */
+.stats-grid.synchronized .stat-card {
+    animation: fadeInUp 0.8s ease-out;
+    animation-delay: 0.1s;
+    animation-fill-mode: both;
+}
+
+/* Option 2: Subtle Stagger (reduced delays for smoother appearance) */
+.stats-grid.staggered .stat-card {
+    animation: fadeInUp 0.8s ease-out;
+    animation-fill-mode: both;
+}
+
+.stats-grid.staggered .stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stats-grid.staggered .stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stats-grid.staggered .stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stats-grid.staggered .stat-card:nth-child(4) { animation-delay: 0.2s; }
+.stats-grid.staggered .stat-card:nth-child(5) { animation-delay: 0.25s; }
+
+/* Option 3: Wave Effect (cards appear in wave pattern) */
+.stats-grid.wave .stat-card {
+    animation: fadeInUp 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.stats-grid.wave .stat-card:nth-child(1) { animation-delay: 0s; }
+.stats-grid.wave .stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stats-grid.wave .stat-card:nth-child(3) { animation-delay: 0.2s; }
+.stats-grid.wave .stat-card:nth-child(4) { animation-delay: 0.1s; }
+.stats-grid.wave .stat-card:nth-child(5) { animation-delay: 0s; }
+
+/* Default: Subtle stagger */
+.stat-card {
+    animation: fadeInUp 0.8s ease-out;
+    animation-fill-mode: both;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.2s; }
+.stat-card:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 3. Table Row Animations */
+.data-table tbody tr {
+    animation: slideInLeft 0.4s ease-out;
+}
+
+.data-table tbody tr:nth-child(odd) {
+    animation-delay: 0.1s;
+}
+
+.data-table tbody tr:nth-child(even) {
+    animation-delay: 0.2s;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* 4. Button Hover Animations */
+.btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+    transition: transform 0.1s;
+}
+
+/* 5. Modal Animations */
+.modal {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+    animation: slideInDown 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 6. Form Input Animations */
+.form-group {
+    position: relative;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+}
+
+/* 7. Icon Animations */
+.stat-icon {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:hover .stat-icon {
+    animation: bounceIn 0.6s ease;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* 8. Loading Animations */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 9. Success/Error Message Animations */
+.alert {
+    animation: slideInRight 0.5s ease-out;
+}
+
+.alert.success {
+    animation: slideInRight 0.5s ease-out;
+}
+
+.alert.error {
+    animation: shake 0.6s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+/* 10. Progress Bar Animation */
+.progress-bar {
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: progressShine 2s infinite;
+}
+
+@keyframes progressShine {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* 11. Hover Effects for Interactive Elements */
+.interactive-element {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.interactive-element:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* 12. Staggered Animations for Lists */
+.staggered-list li {
+    animation: slideInLeft 0.5s ease-out;
+}
+
+.staggered-list li:nth-child(1) { animation-delay: 0.1s; }
+.staggered-list li:nth-child(2) { animation-delay: 0.2s; }
+.staggered-list li:nth-child(3) { animation-delay: 0.3s; }
+.staggered-list li:nth-child(4) { animation-delay: 0.4s; }
+.staggered-list li:nth-child(5) { animation-delay: 0.5s; }
+
+/* 13. Pulse Animation for Important Elements */
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* 14. Floating Animation */
+.float {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* 15. Glow Effect */
+.glow {
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    }
+    to {
+        box-shadow: 0 0 30px rgba(102, 126, 234, 0.8);
+    }
+}
