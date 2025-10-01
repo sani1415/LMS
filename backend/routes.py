@@ -151,10 +151,17 @@ def register_routes(app):
     @app.route('/api/books/<int:book_id>', methods=['GET'])
     def get_book(book_id):
         try:
+            # Check database connection health first
+            from app import check_database_connection
+            if not check_database_connection():
+                return jsonify({'error': 'Database connection issue, please try again'}), 503
+                
             book = Book.query.get_or_404(book_id)
             return jsonify(book.to_dict())
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            # Log the error for debugging
+            print(f"Get book API error: {e}")
+            return jsonify({'error': 'Database connection issue, please try again'}), 503
 
     @app.route('/api/books/<int:book_id>', methods=['PUT'])
     @token_required
@@ -573,6 +580,11 @@ def register_routes(app):
     @app.route('/api/issue-history', methods=['GET'])
     def get_issue_history():
         try:
+            # Check database connection health first
+            from app import check_database_connection
+            if not check_database_connection():
+                return jsonify({'error': 'Database connection issue, please try again'}), 503
+                
             page = request.args.get('page', 1, type=int)
             per_page = request.args.get('per_page', 100, type=int)
             
@@ -590,12 +602,19 @@ def register_routes(app):
                 'per_page': per_page
             })
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            # Log the error for debugging
+            print(f"Issue history API error: {e}")
+            return jsonify({'error': 'Database connection issue, please try again'}), 503
 
     # Library Log API
     @app.route('/api/library-log', methods=['GET'])
     def get_library_log():
         try:
+            # Check database connection health first
+            from app import check_database_connection
+            if not check_database_connection():
+                return jsonify({'error': 'Database connection issue, please try again'}), 503
+                
             page = request.args.get('page', 1, type=int)
             per_page = request.args.get('per_page', 100, type=int)
             
@@ -615,7 +634,9 @@ def register_routes(app):
                 'per_page': per_page
             })
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            # Log the error for debugging
+            print(f"Library log API error: {e}")
+            return jsonify({'error': 'Database connection issue, please try again'}), 503
 
     # CSV Import endpoint
     @app.route('/api/books/import-csv', methods=['POST'])
@@ -865,6 +886,11 @@ def register_routes(app):
     @app.route('/api/books/csv-template', methods=['GET'])
     def download_csv_template():
         try:
+            # Check database connection health first
+            from app import check_database_connection
+            if not check_database_connection():
+                return jsonify({'error': 'Database connection issue, please try again'}), 503
+                
             from flask import send_file
             import io
 
@@ -931,12 +957,19 @@ def register_routes(app):
             )
 
         except Exception as e:
-            return jsonify({'error': f'Error creating template: {str(e)}'}), 500
+            # Log the error for debugging
+            print(f"CSV template download error: {e}")
+            return jsonify({'error': 'Database connection issue, please try again'}), 503
 
     # CSV Template info endpoint (for showing format info)
     @app.route('/api/books/csv-template-info', methods=['GET'])
     def get_csv_template_info():
         try:
+            # Check database connection health first
+            from app import check_database_connection
+            if not check_database_connection():
+                return jsonify({'error': 'Database connection issue, please try again'}), 503
+                
             return jsonify({
                 'message': 'CSV template format information',
                 'file_format': 'CSV (.csv)',
@@ -974,6 +1007,11 @@ def register_routes(app):
         import os
         
         try:
+            # Check database connection health first
+            from app import check_database_connection
+            if not check_database_connection():
+                return jsonify({'error': 'Database connection issue, please try again'}), 503
+                
             from flask import send_file
             import csv
 
@@ -1038,7 +1076,9 @@ def register_routes(app):
                     pass
 
         except Exception as e:
-            return jsonify({'error': f'Error exporting books: {str(e)}'}), 500
+            # Log the error for debugging
+            print(f"Export books CSV error: {e}")
+            return jsonify({'error': 'Database connection issue, please try again'}), 503
 
     # Bulk delete books endpoint
     @app.route('/api/books/bulk-delete', methods=['POST'])
