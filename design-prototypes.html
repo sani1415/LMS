@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS Design Prototypes</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/enhanced-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Prototype-specific styles */
+        .prototype-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .prototype-section {
+            margin: 40px 0;
+            padding: 30px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            background: white;
+        }
+        
+        .prototype-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .prototype-description {
+            color: #6c757d;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        /* Prototype 1: Enhanced Table */
+        .prototype-1 .book-name-enhanced {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        
+        .prototype-1 .author-name {
+            font-size: 14px;
+            color: #6c757d;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+        
+        .prototype-1 .book-meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .prototype-1 .category-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .prototype-1 .year-badge {
+            background: #f8f9fa;
+            color: #495057;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 11px;
+            border: 1px solid #dee2e6;
+        }
+        
+        /* Prototype 2: Card Layout */
+        .prototype-2 .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .prototype-2 .book-card {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .prototype-2 .book-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .prototype-2 .book-header {
+            margin-bottom: 15px;
+        }
+        
+        .prototype-2 .book-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+        
+        .prototype-2 .book-author {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        
+        .prototype-2 .book-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        
+        .prototype-2 .meta-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .prototype-2 .meta-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .prototype-2 .meta-value {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .prototype-2 .book-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #f1f3f4;
+        }
+        
+        .prototype-2 .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .prototype-2 .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .prototype-2 .status-dot.available { background: #28a745; }
+        .prototype-2 .status-dot.issued { background: #dc3545; }
+        
+        /* Prototype 3: List with Icons */
+        .prototype-3 .book-list-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .prototype-3 .book-list-item:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+        
+        .prototype-3 .book-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .prototype-3 .book-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .prototype-3 .book-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        
+        .prototype-3 .book-details {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            color: #6c757d;
+        }
+        
+        .prototype-3 .book-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        /* Prototype 4: Modern Table */
+        .prototype-4 .modern-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+        
+        .prototype-4 .modern-table th {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 20px 16px;
+            font-weight: 700;
+            color: #2c3e50;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .prototype-4 .modern-table td {
+            padding: 16px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        
+        .prototype-4 .modern-table tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        .prototype-4 .modern-table tbody tr:hover {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+        
+        .prototype-4 .book-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .prototype-4 .book-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .prototype-4 .book-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .prototype-4 .book-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+        
+        .prototype-4 .book-author {
+            font-size: 13px;
+            color: #6c757d;
+        }
+        
+        .prototype-4 .category-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .prototype-4 .status-badge {
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .prototype-4 .status-badge.available {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .prototype-4 .status-badge.issued {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* Navigation for prototypes */
+        .prototype-nav {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 10px;
+            z-index: 1000;
+        }
+        
+        .prototype-nav a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 500;
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+        
+        .prototype-nav a:hover {
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="prototype-nav">
+        <a href="#prototype-1">Enhanced Table</a>
+        <a href="#prototype-2">Card Layout</a>
+        <a href="#prototype-3">List with Icons</a>
+        <a href="#prototype-4">Modern Table</a>
+    </div>
+
+    <div class="prototype-container">
+        <h1 style="text-align: center; margin-bottom: 40px; color: #2c3e50;">📚 LMS Design Prototypes</h1>
+        
+        <!-- Prototype 1: Enhanced Table -->
+        <div id="prototype-1" class="prototype-section">
+            <h2 class="prototype-title">🎯 Prototype 1: Enhanced Table</h2>
+            <p class="prototype-description">
+                Keep the table layout but enhance the book names with better typography, category badges, and visual hierarchy.
+            </p>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Library ID</th>
+                            <th>Book Information</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>LIB001</td>
+                            <td>
+                                <div class="book-name-enhanced">The Great Gatsby</div>
+                                <div class="author-name">by F. Scott Fitzgerald</div>
+                                <div class="book-meta">
+                                    <span class="year-badge">1925</span>
+                                    <span class="category-badge">Fiction</span>
+                                </div>
+                            </td>
+                            <td>Literature</td>
+                            <td><span class="status-badge available">Available</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm"><i class="fas fa-share"></i></button>
+                                    <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>LIB002</td>
+                            <td>
+                                <div class="book-name-enhanced">To Kill a Mockingbird</div>
+                                <div class="author-name">by Harper Lee</div>
+                                <div class="book-meta">
+                                    <span class="year-badge">1960</span>
+                                    <span class="category-badge">Fiction</span>
+                                </div>
+                            </td>
+                            <td>Literature</td>
+                            <td><span class="status-badge issued">Issued</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-secondary btn-sm"><i class="fas fa-undo"></i></button>
+                                    <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Prototype 2: Card Layout -->
+        <div id="prototype-2" class="prototype-section">
+            <h2 class="prototype-title">🃏 Prototype 2: Card Layout</h2>
+            <p class="prototype-description">
+                Transform the table into a modern card-based layout with better visual hierarchy and spacing.
+            </p>
+            
+            <div class="books-grid">
+                <div class="book-card">
+                    <div class="book-header">
+                        <div class="book-title">The Great Gatsby</div>
+                        <div class="book-author">by F. Scott Fitzgerald</div>
+                    </div>
+                    <div class="book-meta-grid">
+                        <div class="meta-item">
+                            <span class="meta-label">Category:</span>
+                            <span class="meta-value">Fiction</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Year:</span>
+                            <span class="meta-value">1925</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Publisher:</span>
+                            <span class="meta-value">Scribner</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Copies:</span>
+                            <span class="meta-value">2</span>
+                        </div>
+                    </div>
+                    <div class="book-footer">
+                        <div class="status-indicator">
+                            <div class="status-dot available"></div>
+                            <span>Available</span>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary btn-sm"><i class="fas fa-share"></i></button>
+                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="book-card">
+                    <div class="book-header">
+                        <div class="book-title">To Kill a Mockingbird</div>
+                        <div class="book-author">by Harper Lee</div>
+                    </div>
+                    <div class="book-meta-grid">
+                        <div class="meta-item">
+                            <span class="meta-label">Category:</span>
+                            <span class="meta-value">Fiction</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Year:</span>
+                            <span class="meta-value">1960</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Publisher:</span>
+                            <span class="meta-value">J.B. Lippincott</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Copies:</span>
+                            <span class="meta-value">1</span>
+                        </div>
+                    </div>
+                    <div class="book-footer">
+                        <div class="status-indicator">
+                            <div class="status-dot issued"></div>
+                            <span>Issued</span>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary btn-sm"><i class="fas fa-undo"></i></button>
+                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prototype 3: List with Icons -->
+        <div id="prototype-3" class="prototype-section">
+            <h2 class="prototype-title">📋 Prototype 3: List with Icons</h2>
+            <p class="prototype-description">
+                A clean list layout with book icons, better typography, and organized information display.
+            </p>
+            
+            <div class="book-list-item">
+                <div class="book-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="book-info">
+                    <div class="book-title">The Great Gatsby</div>
+                    <div class="book-details">
+                        <span><i class="fas fa-user"></i> F. Scott Fitzgerald</span>
+                        <span><i class="fas fa-tag"></i> Fiction</span>
+                        <span><i class="fas fa-calendar"></i> 1925</span>
+                        <span><i class="fas fa-building"></i> Scribner</span>
+                    </div>
+                </div>
+                <div class="book-actions">
+                    <button class="btn btn-primary btn-sm"><i class="fas fa-share"></i></button>
+                    <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            
+            <div class="book-list-item">
+                <div class="book-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="book-info">
+                    <div class="book-title">To Kill a Mockingbird</div>
+                    <div class="book-details">
+                        <span><i class="fas fa-user"></i> Harper Lee</span>
+                        <span><i class="fas fa-tag"></i> Fiction</span>
+                        <span><i class="fas fa-calendar"></i> 1960</span>
+                        <span><i class="fas fa-building"></i> J.B. Lippincott</span>
+                    </div>
+                </div>
+                <div class="book-actions">
+                    <button class="btn btn-secondary btn-sm"><i class="fas fa-undo"></i></button>
+                    <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prototype 4: Modern Table -->
+        <div id="prototype-4" class="prototype-section">
+            <h2 class="prototype-title">✨ Prototype 4: Modern Table</h2>
+            <p class="prototype-description">
+                Enhanced table with book avatars, better spacing, and modern styling while maintaining table structure.
+            </p>
+            
+            <div class="modern-table">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Book</th>
+                            <th>Category</th>
+                            <th>Year</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="book-cell">
+                                    <div class="book-avatar">TG</div>
+                                    <div class="book-info">
+                                        <div class="book-title">The Great Gatsby</div>
+                                        <div class="book-author">F. Scott Fitzgerald</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="category-tag">Fiction</span></td>
+                            <td>1925</td>
+                            <td><span class="status-badge available">Available</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm"><i class="fas fa-share"></i></button>
+                                    <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="book-cell">
+                                    <div class="book-avatar">TK</div>
+                                    <div class="book-info">
+                                        <div class="book-title">To Kill a Mockingbird</div>
+                                        <div class="book-author">Harper Lee</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="category-tag">Fiction</span></td>
+                            <td>1960</td>
+                            <td><span class="status-badge issued">Issued</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-secondary btn-sm"><i class="fas fa-undo"></i></button>
+                                    <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('.prototype-nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
