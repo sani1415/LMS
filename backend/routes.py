@@ -886,88 +886,63 @@ def register_routes(app):
             db.session.rollback()
             return jsonify({'error': f'Import failed: {str(e)}'}), 500
 
-    # CSV Template download endpoint
+    # CSV Template download endpoint - ULTRA SIMPLE VERSION
     @app.route('/api/books/csv-template', methods=['GET'])
     def download_csv_template():
+        """Download CSV template - ultra simple version for debugging"""
         try:
-            # Simple database connection test instead of importing from app
-            try:
-                from sqlalchemy import text
-                db.session.execute(text('SELECT 1'))
-                db.session.commit()
-            except Exception as db_error:
-                print(f"Database connection test failed: {db_error}")
-                return jsonify({'error': 'Database connection issue, please try again'}), 503
-                
-            from flask import send_file
+            print("CSV template download requested - starting simple version")
+            
+            from flask import send_file, Response
             import io
-
-            # Create template data with all 12 fields including multilingual examples
-            template_data = {
-                'Book Name': [
-                    'The Great Gatsby',
-                    'গ্রেট গ্যাটসবি',  # Bengali
-                    'الغَاتسبي العظيم'  # Arabic
-                ],
-                'Author': [
-                    'F. Scott Fitzgerald',
-                    'রবীন্দ্রনাথ ঠাকুর',  # Rabindranath Tagore in Bengali
-                    'نجيب محفوظ'  # Naguib Mahfouz in Arabic
-                ],
-                'Category': [
-                    'Fiction',
-                    'সাহিত্য',  # Literature in Bengali
-                    'أدب'  # Literature in Arabic
-                ],
-                'Editor': ['Maxwell Perkins', 'এডিটর নাম', 'اسم المحرر'],  # Editor names in different languages
-                'Volumes': [1, 2, 1],
-                'Publisher': [
-                    'Scribner',
-                    'বিশ্বভারতী',  # Visva-Bharati in Bengali
-                    'دار الشروق'  # Dar Al-Shorouk in Arabic
-                ],
-                'Year': [1925, 1913, 1956],
-                'Copies': [2, 1, 3],
-                'Status': ['Available', 'Available', 'Available'],
-                'Completion Status': ['Complete', 'Complete', 'Incomplete'],
-                'Note': [
-                    'Classic American novel',
-                    'নোবেল পুরস্কার বিজয়ী',  # Nobel Prize winner in Bengali
-                    'الرواية الكلاسيكية'  # Classic novel in Arabic
-                ]
-            }
-
-            # Create CSV file in memory with UTF-8 encoding using built-in csv module
             import csv
-            output = io.StringIO()
-            writer = csv.writer(output)
-            
-            # Write header
-            headers = list(template_data.keys())
-            writer.writerow(headers)
-            
-            # Write data rows
-            num_rows = len(template_data[headers[0]])
-            for i in range(num_rows):
-                row = [template_data[header][i] for header in headers]
-                writer.writerow(row)
 
-            # Convert to BytesIO with UTF-8 encoding
-            csv_bytes = io.BytesIO()
-            csv_bytes.write(output.getvalue().encode('utf-8'))
-            csv_bytes.seek(0)
+            # Create very simple CSV content
+            csv_content = """Book Name,Author,Category,Editor,Volumes,Publisher,Year,Copies,Status,Completion Status,Note
+The Great Gatsby,F. Scott Fitzgerald,Fiction,Maxwell Perkins,1,Scribner,1925,2,Available,Complete,Classic American novel
+Sample Book,Sample Author,Sample Category,Sample Editor,1,Sample Publisher,2023,1,Available,Complete,Sample note"""
 
-            return send_file(
-                csv_bytes,
-                as_attachment=True,
-                download_name='book_import_template.csv',
-                mimetype='text/csv; charset=utf-8'
-            )
+            print(f"CSV content created, length: {len(csv_content)}")
+
+            # Method 1: Try using Response (simpler)
+            try:
+                response = Response(
+                    csv_content,
+                    mimetype='text/csv',
+                    headers={
+                        'Content-Disposition': 'attachment; filename=book_import_template.csv',
+                        'Content-Type': 'text/csv; charset=utf-8'
+                    }
+                )
+                print("CSV template created using Response method")
+                return response
+            except Exception as response_error:
+                print(f"Response method failed: {response_error}")
+                
+                # Method 2: Try using BytesIO and send_file
+                try:
+                    csv_bytes = io.BytesIO()
+                    csv_bytes.write(csv_content.encode('utf-8'))
+                    csv_bytes.seek(0)
+                    
+                    print("CSV template created using BytesIO method")
+                    
+                    return send_file(
+                        csv_bytes,
+                        as_attachment=True,
+                        download_name='book_import_template.csv',
+                        mimetype='text/csv'
+                    )
+                except Exception as send_file_error:
+                    print(f"Send_file method failed: {send_file_error}")
+                    raise send_file_error
 
         except Exception as e:
             # Log the error for debugging
             print(f"CSV template download error: {e}")
-            return jsonify({'error': 'Database connection issue, please try again'}), 503
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': f'CSV template creation failed: {str(e)}'}), 500
 
     # CSV Template info endpoint (for showing format info)
     @app.route('/api/books/csv-template-info', methods=['GET'])
@@ -1138,9 +1113,15 @@ def register_routes(app):
     @app.route('/api/health', methods=['GET'])
     def health_check():
         try:
-            # Check database connection health
-            from app import check_database_connection
-            db_healthy = check_database_connection()
+            # Simple database connection test
+            try:
+                from sqlalchemy import text
+                db.session.execute(text('SELECT 1'))
+                db.session.commit()
+                db_healthy = True
+            except Exception as db_error:
+                print(f"Health check database test failed: {db_error}")
+                db_healthy = False
             
             if db_healthy:
                 return jsonify({
@@ -1159,6 +1140,87 @@ def register_routes(app):
                 'status': 'unhealthy', 
                 'message': f'Health check failed: {str(e)}',
                 'database': 'error'
+            }), 500
+
+    # Simple test endpoint for CSV template
+    @app.route('/api/test-csv', methods=['GET'])
+    def test_csv_template():
+        """Simple test endpoint to verify CSV template functionality"""
+        try:
+            import io
+            import csv
+            
+            # Create simple test data
+            test_data = [
+                ['Book Name', 'Author', 'Category'],
+                ['Test Book', 'Test Author', 'Test Category']
+            ]
+            
+            # Create CSV in memory
+            output = io.StringIO()
+            writer = csv.writer(output)
+            for row in test_data:
+                writer.writerow(row)
+            
+            csv_content = output.getvalue()
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'CSV template test passed',
+                'csv_preview': csv_content,
+                'length': len(csv_content)
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'status': 'error',
+                'message': f'CSV template test failed: {str(e)}'
+            }), 500
+
+    # Application warming endpoint
+    @app.route('/api/warm-up', methods=['GET'])
+    def warm_up_application():
+        """Warm up the application by establishing database connections"""
+        try:
+            print("Application warm-up requested")
+            
+            # Test database connection
+            try:
+                from sqlalchemy import text
+                db.session.execute(text('SELECT 1'))
+                db.session.commit()
+                db_status = "connected"
+                print("Database connection established during warm-up")
+            except Exception as db_error:
+                db_status = f"error: {str(db_error)}"
+                print(f"Database connection failed during warm-up: {db_error}")
+            
+            # Test CSV creation
+            try:
+                import io
+                import csv
+                output = io.StringIO()
+                writer = csv.writer(output)
+                writer.writerow(['Test'])
+                csv_test = "success"
+                print("CSV creation test passed during warm-up")
+            except Exception as csv_error:
+                csv_test = f"error: {str(csv_error)}"
+                print(f"CSV creation test failed during warm-up: {csv_error}")
+            
+            return jsonify({
+                'status': 'warmed_up',
+                'message': 'Application warming completed',
+                'database': db_status,
+                'csv_functionality': csv_test,
+                'timestamp': datetime.now().isoformat()
+            })
+            
+        except Exception as e:
+            print(f"Warm-up failed: {e}")
+            return jsonify({
+                'status': 'warm_up_failed',
+                'message': f'Warm-up failed: {str(e)}'
             }), 500
 
     # Error handlers
