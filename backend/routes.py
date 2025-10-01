@@ -19,6 +19,11 @@ def register_routes(app):
     @app.route('/api/dashboard', methods=['GET'])
     def get_dashboard_stats():
         try:
+            # Check database connection health first
+            from app import check_database_connection
+            if not check_database_connection():
+                return jsonify({'error': 'Database connection issue, please try again'}), 503
+                
             total_books = Book.query.count()
             total_authors = db.session.query(Book.author).distinct().count()
             total_categories = Category.query.count()
@@ -33,12 +38,19 @@ def register_routes(app):
                 'books_issued': books_issued
             })
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            # Log the error for debugging
+            print(f"Dashboard API error: {e}")
+            return jsonify({'error': 'Database connection issue, please try again'}), 503
 
     # Books API
     @app.route('/api/books', methods=['GET'])
     def get_books():
         try:
+            # Check database connection health first
+            from app import check_database_connection
+            if not check_database_connection():
+                return jsonify({'error': 'Database connection issue, please try again'}), 503
+                
             page = request.args.get('page', 1, type=int)
             per_page = request.args.get('per_page', 100, type=int)
             
@@ -81,7 +93,9 @@ def register_routes(app):
                 'per_page': per_page
             })
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            # Log the error for debugging
+            print(f"Books API error: {e}")
+            return jsonify({'error': 'Database connection issue, please try again'}), 503
 
     @app.route('/api/books', methods=['POST'])
     @token_required
@@ -282,10 +296,17 @@ def register_routes(app):
     @app.route('/api/members', methods=['GET'])
     def get_members():
         try:
+            # Check database connection health first
+            from app import check_database_connection
+            if not check_database_connection():
+                return jsonify({'error': 'Database connection issue, please try again'}), 503
+                
             members = Member.query.all()
             return jsonify([member.to_dict() for member in members])
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            # Log the error for debugging
+            print(f"Members API error: {e}")
+            return jsonify({'error': 'Database connection issue, please try again'}), 503
 
     @app.route('/api/members', methods=['POST'])
     @token_required
@@ -343,10 +364,17 @@ def register_routes(app):
     @app.route('/api/categories', methods=['GET'])
     def get_categories():
         try:
+            # Check database connection health first
+            from app import check_database_connection
+            if not check_database_connection():
+                return jsonify({'error': 'Database connection issue, please try again'}), 503
+                
             categories = Category.query.all()
             return jsonify([category.to_dict() for category in categories])
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            # Log the error for debugging
+            print(f"Categories API error: {e}")
+            return jsonify({'error': 'Database connection issue, please try again'}), 503
 
     @app.route('/api/categories', methods=['POST'])
     @token_required
@@ -424,10 +452,17 @@ def register_routes(app):
     @app.route('/api/publishers', methods=['GET'])
     def get_publishers():
         try:
+            # Check database connection health first
+            from app import check_database_connection
+            if not check_database_connection():
+                return jsonify({'error': 'Database connection issue, please try again'}), 503
+                
             publishers = Publisher.query.all()
             return jsonify([publisher.to_dict() for publisher in publishers])
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            # Log the error for debugging
+            print(f"Publishers API error: {e}")
+            return jsonify({'error': 'Database connection issue, please try again'}), 503
 
     @app.route('/api/publishers', methods=['POST'])
     @token_required
@@ -1050,7 +1085,29 @@ def register_routes(app):
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])
     def health_check():
-        return jsonify({'status': 'healthy', 'message': 'Library Management System API is running'})
+        try:
+            # Check database connection health
+            from app import check_database_connection
+            db_healthy = check_database_connection()
+            
+            if db_healthy:
+                return jsonify({
+                    'status': 'healthy', 
+                    'message': 'Library Management System API is running',
+                    'database': 'connected'
+                })
+            else:
+                return jsonify({
+                    'status': 'degraded', 
+                    'message': 'API is running but database connection issues detected',
+                    'database': 'disconnected'
+                }), 503
+        except Exception as e:
+            return jsonify({
+                'status': 'unhealthy', 
+                'message': f'Health check failed: {str(e)}',
+                'database': 'error'
+            }), 500
 
     # Error handlers
     @app.errorhandler(404)

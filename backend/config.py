@@ -45,13 +45,22 @@ class ProductionConfig(Config):
         # Set to None - the application will check this and provide a clear error message
         SQLALCHEMY_DATABASE_URI = None
 
-    # Connection pool settings for cPanel stability
+    # Connection pool settings for cPanel stability - optimized for shared hosting
     SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_size': 3,
-        'pool_timeout': 20,
-        'pool_recycle': 280,  # Recycle connections before they timeout
-        'pool_pre_ping': True,  # Verify connections before use
-        'max_overflow': 0
+        'pool_size': 1,  # Conservative pool size for shared hosting
+        'pool_timeout': 30,  # Increased timeout for slower connections
+        'pool_recycle': 180,  # Shorter recycle time to prevent timeouts
+        'pool_pre_ping': True,  # Always verify connections before use
+        'max_overflow': 0,  # No overflow connections
+        'connect_args': {
+            'connect_timeout': 60,
+            'read_timeout': 60,
+            'write_timeout': 60,
+            'autocommit': True,
+            'charset': 'utf8mb4',
+            'use_unicode': True,
+            'sql_mode': 'TRADITIONAL'
+        }
     }
 
 class TestingConfig(Config):

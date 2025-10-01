@@ -53,7 +53,16 @@ app.config.from_object(config[config_name])
 
 # Check if ProductionConfig is being used but database URI is None
 if config_name == 'production' and app.config.get('SQLALCHEMY_DATABASE_URI') is None:
-    raise ValueError("Production configuration requires database environment variables (DB_USER, DB_PASSWORD, DB_HOST, DB_NAME) to be set in cPanel.")
+    missing_vars = []
+    required_vars = ['DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_NAME']
+    for var in required_vars:
+        if not os.environ.get(var):
+            missing_vars.append(var)
+    
+    if missing_vars:
+        error_msg = f"Production configuration requires these environment variables to be set in cPanel: {', '.join(missing_vars)}"
+        print(f"❌ {error_msg}")
+        raise ValueError(error_msg)
 
 # Initialize extensions with the app
 db.init_app(app)
@@ -81,19 +90,62 @@ def close_db_session(error):
 @app.errorhandler(Exception)
 def handle_database_errors(error):
     """Handle database connection errors gracefully"""
-    if 'MySQL server has gone away' in str(error) or 'Broken pipe' in str(error):
+    error_str = str(error).lower()
+    
+    # Check for various database connection issues
+    db_connection_errors = [
+        'mysql server has gone away',
+        'broken pipe',
+        'connection reset by peer',
+        'connection refused',
+        'timeout',
+        'lost connection',
+        'can\'t connect to mysql server',
+        'operationalerror',
+        'disconnect'
+    ]
+    
+    if any(err in error_str for err in db_connection_errors):
         print(f"Database connection error handled: {error}")
+        
+        # Attempt to recover the connection
         try:
             db.session.rollback()
-        except:
-            pass
-        try:
             db.session.remove()
-        except:
-            pass
-        # Return a generic error response instead of crashing
-        return {"error": "Database connection issue, please try again"}, 500
+            # Try to create a new session
+            db.session.close()
+            db.session.bind.pool.dispose()
+        except Exception as recovery_error:
+            print(f"Error during connection recovery: {recovery_error}")
+        
+        # Return a user-friendly error response
+        from flask import jsonify
+        return jsonify({"error": "Database connection issue, please try again in a moment"}), 503
     raise error
+
+def check_database_connection():
+    """Check if database connection is healthy and recover if needed"""
+    try:
+        # Test the connection with a simple query
+        db.session.execute('SELECT 1')
+        db.session.commit()
+        return True
+    except Exception as e:
+        print(f"Database connection check failed: {e}")
+        try:
+            # Attempt to recover the connection
+            db.session.rollback()
+            db.session.remove()
+            db.session.close()
+            db.session.bind.pool.dispose()
+            # Test again after cleanup
+            db.session.execute('SELECT 1')
+            db.session.commit()
+            print("Database connection recovered successfully")
+            return True
+        except Exception as recovery_error:
+            print(f"Database connection recovery failed: {recovery_error}")
+            return False
 
 def ensure_database_exists():
     """Create database if it doesn't exist - UNIFIED for all environments"""
