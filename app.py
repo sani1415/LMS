@@ -15,32 +15,39 @@ from backend.models import Book, User, Category, Publisher, Member # Import mode
 import warnings
 warnings.filterwarnings('ignore', category=UserWarning)
 
-# Handle fileno operation issues in cPanel
-try:
-    # Test if fileno operations work
-    if hasattr(sys.stdout, 'fileno'):
-        sys.stdout.fileno()
-        sys.stderr.fileno()
-except (AttributeError, io.UnsupportedOperation, OSError):
-    # Replace stdout and stderr with safer versions
+# Handle fileno operation issues in cPanel - Enhanced version
+def setup_safe_output():
+    """Setup safe output handlers for cPanel environment"""
     class SafeOutput:
         def __init__(self, original):
             self.original = original
         def write(self, x):
             try:
                 self.original.write(x)
-            except:
+            except (OSError, io.UnsupportedOperation):
                 pass
         def flush(self):
             try:
                 self.original.flush()
-            except:
+            except (OSError, io.UnsupportedOperation):
                 pass
         def fileno(self):
-            raise io.UnsupportedOperation("fileno not supported")
+            # Return a dummy file descriptor to prevent errors
+            return -1
+        def __getattr__(self, name):
+            return getattr(self.original, name)
 
-    sys.stdout = SafeOutput(sys.stdout)
-    sys.stderr = SafeOutput(sys.stderr)
+    # Test if fileno operations work, if not, use safe versions
+    try:
+        if hasattr(sys.stdout, 'fileno'):
+            sys.stdout.fileno()
+            sys.stderr.fileno()
+    except (AttributeError, io.UnsupportedOperation, OSError):
+        sys.stdout = SafeOutput(sys.stdout)
+        sys.stderr = SafeOutput(sys.stderr)
+
+# Setup safe output
+setup_safe_output()
 
 
 # Determine the config name from the environment variable
@@ -354,24 +361,30 @@ def create_sample_data():
 
 def initialize_database():
     """Initialize database - UNIFIED for all environments"""
-    # Ensure database exists/is accessible
-    ensure_database_exists()
+    try:
+        # Ensure database exists/is accessible
+        ensure_database_exists()
 
-    with app.app_context():
-        # Create all tables - works everywhere
-        db.create_all()
-        print("Database tables created with db.create_all()")
+        with app.app_context():
+            # Create all tables - works everywhere
+            db.create_all()
+            print("Database tables created with db.create_all()")
 
-        # Create admin user
-        create_admin_user()
+            # Create admin user
+            create_admin_user()
 
-        # Add sample data if database is empty
-        if not Book.query.first():
-            print("Database is empty, creating sample data...")
-            create_sample_data()
-            print("Sample data created.")
+            # Add sample data if database is empty
+            if not Book.query.first():
+                print("Database is empty, creating sample data...")
+                create_sample_data()
+                print("Sample data created.")
 
-    print("Database initialization completed")
+        print("Database initialization completed")
+        
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+        # Don't raise the exception - let the app continue
+        # This prevents the app from crashing during startup
 
 if __name__ == '__main__':
     # This block runs only when you execute "python app.py" locally
