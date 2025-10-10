@@ -27,7 +27,7 @@ python init_db.py
 
 Write-Host ""
 Write-Host "Starting Flask server..." -ForegroundColor Green
-Write-Host "The API will be available at: http://localhost:5001" -ForegroundColor Cyan
+Write-Host "The API will be available at: http://localhost:5002" -ForegroundColor Cyan
 Write-Host "Press Ctrl+C to stop the server" -ForegroundColor Yellow
 Write-Host ""
 

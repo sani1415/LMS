@@ -642,6 +642,46 @@ def register_routes(app):
             print(f"Library log API error: {e}")
             return jsonify({'error': 'Database connection issue, please try again'}), 503
 
+    # Add Library Log Entry API
+    @app.route('/api/library-log', methods=['POST'])
+    @token_required
+    def add_library_log_entry(current_user):
+        try:
+            # Check database connection health first
+            from app import check_database_connection
+            if not check_database_connection():
+                return jsonify({'error': 'Database connection issue, please try again'}), 503
+            
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No data provided'}), 400
+                
+            content = data.get('content')
+            log_type = data.get('log_type', 'General')
+            
+            if not content:
+                return jsonify({'error': 'Content is required'}), 400
+            
+            if not content.strip():
+                return jsonify({'error': 'Content cannot be empty'}), 400
+            
+            # Add the log entry
+            log = LibraryLog(content=content.strip(), log_type=log_type)
+            db.session.add(log)
+            db.session.commit()
+            
+            return jsonify({
+                'message': 'Log entry added successfully',
+                'log': log.to_dict()
+            }), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Add library log error: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': 'Failed to add log entry'}), 500
+
     # CSV Import endpoint
     @app.route('/api/books/import-csv', methods=['POST'])
     @token_required

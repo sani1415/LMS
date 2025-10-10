@@ -436,7 +436,18 @@ class LibraryManagementSystem {
         document.getElementById('bulk-delete-publishers-btn').addEventListener('click', () => this.bulkDeletePublishers());
 
         // Add log entry
-        document.getElementById('add-log-btn').addEventListener('click', () => this.addLogEntry());
+        document.getElementById('add-log-btn').addEventListener('click', () => {
+            const textarea = document.getElementById('new-log-entry');
+            const content = textarea.value.trim();
+            
+            if (!content) {
+                alert('Please enter a log entry before submitting.');
+                return;
+            }
+            
+            this.addLogEntry(content);
+            textarea.value = ''; // Clear the textarea after adding
+        });
 
         // Manage items
         document.getElementById('add-member-btn').addEventListener('click', () => this.addItem('member'));

@@ -389,7 +389,7 @@ def initialize_database():
 if __name__ == '__main__':
     # This block runs only when you execute "python app.py" locally
     initialize_database()
-    app.run(debug=False, host='0.0.0.0', port=5001)
+    app.run(debug=False, host='0.0.0.0', port=5002)
 else:
     # This runs when deployed (like in cPanel)
     initialize_database()
