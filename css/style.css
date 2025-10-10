@@ -474,13 +474,15 @@ body.arabic-text .logout-btn {
     box-shadow: var(--shadow-medium, 0 4px 6px rgba(0, 0, 0, 0.07));
     display: flex;
     align-items: center;
-    transition: all 0.3s ease;
+    transition: box-shadow 0.2s ease;
+    transform: none !important;
     border: 1px solid var(--border-color, #e1e8ed);
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    /* Very subtle shadow enhancement only - NO movement */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    transform: none !important;
 }
 
 .stat-card.clickable {
@@ -549,7 +551,6 @@ body.arabic-text .logout-btn {
 }
 
 .btn-primary:hover {
-    transform: translateY(-1px);
     box-shadow: var(--btn-primary-shadow-hover, 0 4px 12px rgba(102, 126, 234, 0.4));
 }
 
@@ -560,7 +561,6 @@ body.arabic-text .logout-btn {
 
 .btn-secondary:hover {
     background: #5a6268;
-    transform: translateY(-1px);
 }
 
 .btn-danger {
@@ -570,7 +570,6 @@ body.arabic-text .logout-btn {
 
 .btn-danger:hover {
     background: #c82333;
-    transform: translateY(-1px);
 }
 
 .btn-sm {
@@ -947,7 +946,6 @@ body.arabic-text .logout-btn {
 }
 
 .back-to-top:hover {
-    transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
 }
 

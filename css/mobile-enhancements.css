@@ -269,8 +269,8 @@
     .stat-card:hover,
     .btn:hover,
     .control-icon:hover {
-        transform: none;
-        box-shadow: initial;
+        transform: none !important;
+        /* Prevent any movement on mobile */
     }
     
     /* Add touch feedback */
@@ -408,7 +408,9 @@
     }
     
     .stat-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        /* Very subtle shadow on desktop hover */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        transform: none !important;
     }
 }
 

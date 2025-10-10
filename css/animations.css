@@ -1,99 +1,29 @@
-/* Beautiful Animations & Transitions for LMS */
+/* Minimal & Professional Animations for LMS */
 
-/* 1. Page Transition Animations */
+/* 1. Simple Fade-in for Pages (No movement, just fade) */
 .page {
-    animation: fadeInUp 0.6s ease-out;
+    animation: simpleFadeIn 0.3s ease-out;
 }
 
-@keyframes fadeInUp {
+@keyframes simpleFadeIn {
     from {
         opacity: 0;
-        transform: translateY(30px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
     }
 }
 
-/* 2. Card Entrance Animations - Multiple Options */
-
-/* Option 1: Synchronized (all cards appear together) */
-.stats-grid.synchronized .stat-card {
-    animation: fadeInUp 0.8s ease-out;
-    animation-delay: 0.1s;
-    animation-fill-mode: both;
-}
-
-/* Option 2: Subtle Stagger (reduced delays for smoother appearance) */
-.stats-grid.staggered .stat-card {
-    animation: fadeInUp 0.8s ease-out;
-    animation-fill-mode: both;
-}
-
-.stats-grid.staggered .stat-card:nth-child(1) { animation-delay: 0.05s; }
-.stats-grid.staggered .stat-card:nth-child(2) { animation-delay: 0.1s; }
-.stats-grid.staggered .stat-card:nth-child(3) { animation-delay: 0.15s; }
-.stats-grid.staggered .stat-card:nth-child(4) { animation-delay: 0.2s; }
-.stats-grid.staggered .stat-card:nth-child(5) { animation-delay: 0.25s; }
-
-/* Option 3: Wave Effect (cards appear in wave pattern) */
-.stats-grid.wave .stat-card {
-    animation: fadeInUp 0.6s ease-out;
-    animation-fill-mode: both;
-}
-
-.stats-grid.wave .stat-card:nth-child(1) { animation-delay: 0s; }
-.stats-grid.wave .stat-card:nth-child(2) { animation-delay: 0.1s; }
-.stats-grid.wave .stat-card:nth-child(3) { animation-delay: 0.2s; }
-.stats-grid.wave .stat-card:nth-child(4) { animation-delay: 0.1s; }
-.stats-grid.wave .stat-card:nth-child(5) { animation-delay: 0s; }
-
-/* Default: Subtle stagger */
+/* 2. Stat Cards - Simple fade, NO stagger, NO delays */
 .stat-card {
-    animation: fadeInUp 0.8s ease-out;
-    animation-fill-mode: both;
+    /* Removed entrance animations - cards appear instantly */
+    opacity: 1;
 }
 
-.stat-card:nth-child(1) { animation-delay: 0.05s; }
-.stat-card:nth-child(2) { animation-delay: 0.1s; }
-.stat-card:nth-child(3) { animation-delay: 0.15s; }
-.stat-card:nth-child(4) { animation-delay: 0.2s; }
-.stat-card:nth-child(5) { animation-delay: 0.25s; }
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* 3. Table Row Animations */
+/* 3. Table Rows - NO entrance animations */
 .data-table tbody tr {
-    animation: slideInLeft 0.4s ease-out;
-}
-
-.data-table tbody tr:nth-child(odd) {
-    animation-delay: 0.1s;
-}
-
-.data-table tbody tr:nth-child(even) {
-    animation-delay: 0.2s;
-}
-
-@keyframes slideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+    /* Removed animations - rows appear instantly */
+    opacity: 1;
 }
 
 /* 4. Button Hover Animations */
@@ -170,31 +100,7 @@
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
 }
 
-/* 7. Icon Animations */
-.stat-icon {
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.stat-card:hover .stat-icon {
-    animation: bounceIn 0.6s ease;
-}
-
-@keyframes bounceIn {
-    0% {
-        transform: scale(0.3);
-        opacity: 0;
-    }
-    50% {
-        transform: scale(1.05);
-    }
-    70% {
-        transform: scale(0.9);
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
+/* 7. Icon Animations - REMOVED - All icons are now static */
 
 /* 8. Loading Animations */
 .loading-overlay {
@@ -279,13 +185,12 @@
 
 /* 11. Hover Effects for Interactive Elements */
 .interactive-element {
-    transition: all 0.3s ease;
+    /* NO transitions - static elements */
     cursor: pointer;
 }
 
 .interactive-element:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    /* NO hover effects - elements stay still */
 }
 
 /* 12. Staggered Animations for Lists */

@@ -42,31 +42,18 @@
     border-radius: 16px;
     box-shadow: var(--shadow-medium);
     border: 1px solid var(--border-color);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: box-shadow 0.2s ease;
+    transform: none !important;
     position: relative;
     overflow: hidden;
 }
 
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--primary-gradient);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-}
-
-.stat-card:hover::before {
-    transform: scaleX(1);
-}
+/* Removed top line animation - too distracting */
 
 .stat-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-large);
-    border-color: rgba(102, 126, 234, 0.2);
+    /* Very subtle shadow only - NO movement */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+    transform: none !important;
 }
 
 .stat-icon {
@@ -80,12 +67,11 @@
     margin-right: 25px;
     font-size: 28px;
     box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
-    transition: all 0.3s ease;
+    /* Removed transition - completely static */
 }
 
 .stat-card:hover .stat-icon {
-    transform: scale(1.1) rotate(5deg);
-    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+    /* Removed all hover effects - icon stays completely still */
 }
 
 .stat-number {
@@ -115,7 +101,7 @@
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -124,20 +110,7 @@
     overflow: hidden;
 }
 
-.btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.btn:hover::before {
-    left: 100%;
-}
+/* Removed shimmer animation on buttons - too distracting */
 
 .btn-primary {
     background: var(--primary-gradient);
@@ -146,8 +119,8 @@
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    /* Reduced movement for subtlety */
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
 }
 
 .btn-success {
@@ -157,8 +130,8 @@
 }
 
 .btn-success:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+    /* Reduced movement for subtlety */
+    box-shadow: 0 6px 20px rgba(79, 172, 254, 0.3);
 }
 
 .btn-danger {
@@ -168,8 +141,8 @@
 }
 
 .btn-danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(250, 112, 154, 0.4);
+    /* Reduced movement for subtlety */
+    box-shadow: 0 6px 20px rgba(250, 112, 154, 0.3);
 }
 
 /* 4. Enhanced Tables */
